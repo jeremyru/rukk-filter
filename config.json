@@ -1,0 +1,79 @@
+{
+  "hotkeys": {
+    "increaseIntensity": "Ctrl+Right",
+    "decreaseIntensity": "Ctrl+Left",
+    "increaseBrightness": "Ctrl+Up",
+    "decreaseBrightness": "Ctrl+Down",
+    "nextPreset": "Alt+Right",
+    "prevPreset": "Alt+Left",
+    "toggleFilter": "Ctrl+O"
+  },
+  "presets": [
+    {
+      "name": "默认",
+      "rgb": [
+        30,
+        32,
+        38
+      ],
+      "intensity": 50,
+      "brightnessFilter": 0,
+      "systemBrightness": 0
+    },
+    {
+      "name": "暖色",
+      "rgb": [
+        255,
+        160,
+        80
+      ],
+      "intensity": 50,
+      "brightnessFilter": 0,
+      "systemBrightness": 100
+    },
+    {
+      "name": "冷色",
+      "rgb": [
+        80,
+        140,
+        255
+      ],
+      "intensity": 50,
+      "brightnessFilter": 0,
+      "systemBrightness": 100
+    },
+    {
+      "name": "夜间",
+      "rgb": [
+        255,
+        100,
+        50
+      ],
+      "intensity": 50,
+      "brightnessFilter": 0,
+      "systemBrightness": 100
+    },
+    {
+      "name": "阅读",
+      "rgb": [
+        200,
+        220,
+        180
+      ],
+      "intensity": 50,
+      "brightnessFilter": 0,
+      "systemBrightness": 100
+    },
+    {
+      "name": "护眼",
+      "rgb": [
+        255,
+        180,
+        120
+      ],
+      "intensity": 50,
+      "brightnessFilter": 0,
+      "systemBrightness": 100
+    }
+  ]
+}

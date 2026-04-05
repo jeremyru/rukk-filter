@@ -1,0 +1,1730 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>屏幕护眼工具</title>
+    <meta name="darkreader-lock" />
+    <script src="./package/vue.global.js"></script>
+    <script src="./package/uno.runtime.js"></script>
+    <style>
+      /* 全局色彩常量 */
+      :root {
+        --primary-red: #f87171;
+        --primary-green: #22c55e;
+        --light-blue: #aed6e9;
+        --card-shadow-color: #1f2937;
+        --text-dark: #1f2937;
+        --text-medium: #4b5563;
+        --text-light: #9ca3af;
+        --bg-page: #fff9f5;
+        --bg-white: #ffffff;
+        --radius-sm: 12px;
+        --radius-lg: 16px;
+
+        /* 3D 阴影配置 */
+        --shadow-x: 5px; /* 阴影向右 */
+        --shadow-y: 5px; /* 阴影向下 */
+        --border-color: #000; /* 黑色边框 */
+        --border-width: 3px;
+      }
+
+      /* 3D动画通用类 */
+      .btn-3d {
+        border: var(--border-width) solid var(--border-color);
+        box-shadow: var(--shadow-x) var(--shadow-y) 0 0 var(--card-shadow-color);
+        transition: all 0.25s ease;
+        -webkit-app-region: no-drag;
+      }
+
+      .btn-3d:hover {
+        border-color: var(--light-blue);
+        box-shadow: 0 0 0 0 var(--card-shadow-color);
+        transform: translate(var(--shadow-x), var(--shadow-y));
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Roboto, sans-serif;
+        user-select: none;
+      }
+
+      body {
+        background: var(--bg-page);
+        color: var(--text-dark);
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+
+      .header h1 {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.75rem;
+      }
+
+      .header p {
+        color: var(--text-medium);
+        font-size: 1rem;
+      }
+
+      .layer-card {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .layer-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .border {
+        border: var(--border-width) solid var(--border-color);
+      }
+      .layer-badge {
+        background: var(--light-blue);
+        color: var(--text-dark);
+        padding: 0.5rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        /* border: var(--border-width) solid var(--border-color); */
+      }
+
+      .layer-name {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      .color-picker-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      input[type="color"] {
+        width: 100px;
+        height: 100px;
+        cursor: pointer;
+        background: none;
+        -webkit-app-region: no-drag;
+      }
+
+      .color-inputs {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .color-input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .color-input-group label {
+        font-size: 1rem;
+        color: var(--text-medium);
+        font-weight: 600;
+      }
+
+      .color-input-group input {
+        width: 80px;
+        padding: 0.5rem;
+        border-radius: var(--radius-sm);
+        text-align: center;
+        font-size: 0.875rem;
+      }
+
+      .color-input-group input:focus {
+        outline: none;
+      }
+
+      .color-presets {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .color-preset-btn {
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        font-size: 0.75rem;
+        color: white;
+        font-weight: 600;
+        -webkit-app-region: no-drag;
+      }
+
+      .color-preset-btn.active {
+        border-color: var(--light-blue);
+        box-shadow: 0 0 0 0 var(--card-shadow-color);
+        transform: translate(var(--shadow-x), var(--shadow-y));
+      }
+
+      .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .slider-label {
+        font-size: 0.875rem;
+        color: var(--text-medium);
+        font-weight: 600;
+        min-width: 80px;
+      }
+
+      input[type="range"] {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: #e9ecef;
+        -webkit-appearance: none;
+        -webkit-app-region: no-drag;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--primary-green);
+        border: var(--border-width) solid var(--border-color);
+        cursor: pointer;
+      }
+
+      .value-display {
+        min-width: 40px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--text-dark);
+      }
+
+      .reset-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius-sm);
+        /* background: var(--light-blue); */
+        color: var(--text-dark);
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 0.875rem;
+        margin-left: auto;
+      }
+
+      /* 隐藏number输入框的上下箭头 */
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        cursor: pointer;
+        -moz-appearance: textfield;
+        -webkit-app-region: no-drag;
+      }
+
+      .hint {
+        font-size: 0.75rem;
+        color: var(--text-medium);
+        font-weight: 600;
+        margin-left: auto;
+      }
+
+      .border-block {
+        height: 2px;
+        background: black;
+        margin: 30px 0;
+      }
+
+      .window-btn {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 8px;
+        color: rgba(0, 0, 0, 0.5);
+        transition: all 0.2s ease;
+        -webkit-app-region: no-drag;
+      }
+
+      .window-btn:hover {
+        color: rgba(0, 0, 0, 0.8);
+      }
+
+      .window-btn-minimize {
+        background: #f5c542;
+      }
+
+      .window-btn-close {
+        background: #f45b5b;
+      }
+
+      .window-btn svg {
+        width: 8px;
+        height: 8px;
+      }
+
+      .filter-toggle-btn {
+        width: 30px;
+        height: 30px;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        color: #22c55e;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        -webkit-app-region: no-drag;
+      }
+
+      .filter-toggle-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .filter-toggle-btn.filter-off {
+        color: #999;
+      }
+
+      .copyright-text {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .pywebview-drag-region:hover .copyright-text {
+        opacity: 1;
+      }
+
+      .bg-green {
+        background-color: var(--primary-green);
+      }
+
+      .bg-gray-300 {
+        background-color: #d1d5db;
+      }
+
+      .text-gray {
+        color: #6b7280;
+      }
+
+      .text-xs {
+        font-size: 0.75rem;
+      }
+
+      .text-sm {
+        font-size: 0.875rem;
+      }
+
+      .px-10px {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .py-5px {
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
+      .gap-10px {
+        gap: 10px;
+      }
+
+      .mb-15px {
+        margin-bottom: 15px;
+      }
+
+      .w-80px {
+        width: 80px;
+      }
+
+      .cursor-pointer {
+        cursor: pointer;
+      }
+
+      .hotkey-input {
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      .hotkey-input.hotkey-active {
+        border-color: var(--primary-green);
+        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+        background-color: rgba(34, 197, 94, 0.05);
+      }
+
+      .mt-10px {
+        margin-top: 10px;
+      }
+
+      .message-container {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        pointer-events: none;
+      }
+
+      .message-item {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        color: white;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: auto;
+      }
+
+      .message-item.show {
+        opacity: 1;
+      }
+
+      .message-item.info {
+        background-color: rgba(59, 130, 246, 0.95);
+      }
+
+      .message-item.success {
+        background-color: rgba(34, 197, 94, 0.95);
+      }
+
+      .message-item.error {
+        background-color: rgba(239, 68, 68, 0.95);
+      }
+
+      .message-item.warning {
+        background-color: rgba(249, 115, 22, 0.95);
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.3s ease,
+          visibility 0.3s ease;
+      }
+
+      .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 400px;
+        max-width: 90%;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+
+      .modal-overlay.show .modal-content {
+        transform: scale(1);
+      }
+
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      .modal-close {
+        width: 28px;
+        height: 28px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+      }
+
+      .modal-close:hover {
+        background-color: #f0f0f0;
+      }
+
+      .modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .modal-footer {
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .btn-primary {
+        padding: 8px 16px;
+        background-color: var(--primary-green);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+
+      .btn-primary:hover {
+        background-color: #1ca34d;
+      }
+
+      .background-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        z-index: 0;
+      }
+
+      .background-image {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        pointer-events: none;
+      }
+
+      .background-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.5);
+        pointer-events: none;
+      }
+
+      .content-container {
+        position: relative;
+        z-index: 1;
+      }
+
+      .background-image {
+        opacity: 1;
+        transition: opacity 0.2s ease-in-out;
+      }
+
+      .background-image.hidden1 {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="message-container" class="message-container"></div>
+    <div id="app">
+      <!-- 全局背景 -->
+      <div class="background-container">
+        <img
+          src="active.png"
+          class="background-image"
+          :class="{ hidden1: !filterEnabled }"
+          alt="background"
+        />
+        <img
+          src="inactive.png"
+          class="background-image"
+          :class="{ hidden1: filterEnabled }"
+          alt="background"
+        />
+        <div class="background-overlay"></div>
+      </div>
+      <div class="content-container">
+        <div
+          class="w-100% h-30px flex flex-row items-center justify-between px-10px pywebview-drag-region relative"
+        >
+          <!-- 滤镜开关 -->
+          <div class="flex items-center">
+            <div>
+              <button
+                class="filter-toggle-btn"
+                :class="{ 'filter-off': !filterEnabled }"
+                @click="toggleFilter"
+                :title="filterEnabled ? '关闭滤镜' : '开启滤镜'"
+                title="点击切换滤镜状态"
+              >
+                <svg
+                  v-if="filterEnabled"
+                  viewBox="0 0 1024 1024"
+                  width="20"
+                  height="20"
+                >
+                  <path
+                    d="M839.5776 377.4464c0-181.1456-146.7392-328.3968-326.9632-328.3968S185.5488 196.3008 185.5488 377.4464c0 73.728 38.8096 164.7616 98.9184 231.8336 61.0304 68.096 105.2672 88.1664 105.2672 177.3568v35.5328h245.76v-35.2256c0-88.8832 44.1344-108.9536 104.96-177.3568 55.6032-62.5664 99.1232-164.5568 99.1232-232.1408z"
+                    fill="#FFEC66"
+                  />
+                  <path
+                    d="M512.6144 4.7104C307.9168 4.7104 141.312 171.9296 141.312 377.4464c0 83.968 43.2128 186.5728 110.1824 261.3248 54.4768 60.7232 94.0032 68.4032 94.0032 147.8656V866.304h334.2336v-79.4624c0-79.1552 39.424-86.8352 93.7984-147.968 62.8736-70.7584 110.3872-183.1936 110.3872-261.5296C883.8144 171.9296 717.312 4.7104 512.6144 4.7104z"
+                    fill="none"
+                    stroke="#41424A"
+                    stroke-width="20"
+                  />
+                  <path
+                    d="M600.8832 1018.4704H424.3456c-6.144 0-11.776-3.9936-15.1552-10.6496l-23.9616-47.8208H640l-23.9616 47.8208c-3.3792 6.656-9.0112 10.6496-15.1552 10.6496z"
+                    fill="#41414A"
+                  />
+                  <path
+                    d="M633.856 715.8784H391.3728c-22.7328 0-41.2672 16.9984-44.1344 38.912h195.7888c10.752 0 19.456 8.8064 19.456 19.456 0 10.8544-8.8064 19.456-19.456 19.456H346.624v34.0992h331.8784v-67.2768c0-24.6784-19.968-44.6464-44.6464-44.6464z"
+                    fill="#646A6D"
+                  />
+                  <path
+                    d="M346.624 885.4528c0 52.0192 42.1888 94.1056 94.1056 94.1056h143.5648c31.744 0 59.5968-15.7696 76.6976-39.8336H494.3872c-10.752 0-19.456-8.8064-19.456-19.456s8.8064-19.456 19.456-19.456h182.5792c0.8192-5.0176 1.536-10.1376 1.536-15.36v-18.7392H346.624v18.7392z"
+                    fill="#646A6D"
+                  />
+                </svg>
+                <svg v-else viewBox="0 0 1024 1024" width="20" height="20">
+                  <path
+                    d="M839.5776 377.4464c0-181.1456-146.7392-328.3968-326.9632-328.3968S185.5488 196.3008 185.5488 377.4464c0 73.728 38.8096 164.7616 98.9184 231.8336 61.0304 68.096 105.2672 88.1664 105.2672 177.3568v35.5328h245.76v-35.2256c0-88.8832 44.1344-108.9536 104.96-177.3568 55.6032-62.5664 99.1232-164.5568 99.1232-232.1408z"
+                    fill="#CCCCCC"
+                  />
+                  <path
+                    d="M512.6144 4.7104C307.9168 4.7104 141.312 171.9296 141.312 377.4464c0 83.968 43.2128 186.5728 110.1824 261.3248 54.4768 60.7232 94.0032 68.4032 94.0032 147.8656V866.304h334.2336v-79.4624c0-79.1552 39.424-86.8352 93.7984-147.968 62.8736-70.7584 110.3872-183.1936 110.3872-261.5296C883.8144 171.9296 717.312 4.7104 512.6144 4.7104z"
+                    fill="none"
+                    stroke="#999999"
+                    stroke-width="20"
+                  />
+                  <path
+                    d="M600.8832 1018.4704H424.3456c-6.144 0-11.776-3.9936-15.1552-10.6496l-23.9616-47.8208H640l-23.9616 47.8208c-3.3792 6.656-9.0112 10.6496-15.1552 10.6496z"
+                    fill="#AAAAAA"
+                  />
+                  <path
+                    d="M633.856 715.8784H391.3728c-22.7328 0-41.2672 16.9984-44.1344 38.912h195.7888c10.752 0 19.456 8.8064 19.456 19.456 0 10.8544-8.8064 19.456-19.456 19.456H346.624v34.0992h331.8784v-67.2768c0-24.6784-19.968-44.6464-44.6464-44.6464z"
+                    fill="#BBBBBB"
+                  />
+                  <path
+                    d="M346.624 885.4528c0 52.0192 42.1888 94.1056 94.1056 94.1056h143.5648c31.744 0 59.5968-15.7696 76.6976-39.8336H494.3872c-10.752 0-19.456-8.8064-19.456-19.456s8.8064-19.456 19.456-19.456h182.5792c0.8192-5.0176 1.536-10.1376 1.536-15.36v-18.7392H346.624v18.7392z"
+                    fill="#BBBBBB"
+                  />
+                </svg>
+              </button>
+            </div>
+            <button
+              class="filter-toggle-btn"
+              @click="showHotkeyModal = true"
+              title="快捷键设置"
+            >
+              <svg
+                t="1775345091137"
+                class="icon"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                p-id="6515"
+                width="200"
+                height="200"
+              >
+                <path
+                  d="M338.1 532.3h-99.7c-20 0-36.3 16.3-36.3 36.4v99.8c0 20.1 16.3 36.4 36.3 36.4h99.7c20.1 0 36.4-16.3 36.4-36.4v-99.8c0-20.1-16.4-36.4-36.4-36.4zM338.1 319.2h-99.7c-20 0-36.3 16.3-36.3 36.4v99.8c0 20 16.3 36.4 36.3 36.4h99.7c20.1 0 36.4-16.3 36.4-36.4v-99.8c0-20.1-16.4-36.4-36.4-36.4zM465 491.7h99.7c20.1 0 36.5-16.3 36.5-36.4v-99.8c0-20.1-16.3-36.4-36.5-36.4H465c-20.1 0-36.4 16.3-36.4 36.4v99.8c0 20.1 16.3 36.4 36.4 36.4z"
+                  p-id="6516"
+                  fill="#bfbfbf"
+                ></path>
+                <path
+                  d="M785.6 319.2h-99.7c-20.1 0-36.4 16.3-36.4 36.4v176.7H465c-20.1 0-36.4 16.3-36.4 36.4v99.8c0 20.1 16.3 36.4 36.4 36.4l324.7-0.4c18.5-2.1 32.3-17.6 32.3-36V355.7c0-20.2-16.3-36.5-36.4-36.5z"
+                  p-id="6517"
+                  fill="#bfbfbf"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <!-- 窗口操作按钮 -->
+          <div class="flex items-center gap-5px">
+            <button
+              class="window-btn window-btn-minimize"
+              @click="minimizeWindow"
+              title="最小化"
+            >
+              <svg
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="2" y1="6" x2="10" y2="6"></line>
+              </svg>
+            </button>
+            <button
+              class="window-btn window-btn-close"
+              @click="closeWindow"
+              title="退出"
+            >
+              <svg
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="2" y1="2" x2="10" y2="10"></line>
+                <line x1="10" y1="2" x2="2" y2="10"></line>
+              </svg>
+            </button>
+          </div>
+          <!-- 版权信息 -->
+          <div
+            class="copyright-text text-black absolute top-50% left-50% -translate-x-1/2 -translate-y-1/2"
+          >
+            Power by @JeremyRu
+          </div>
+        </div>
+        <div class="layer-card">
+          <!-- 滤镜重置按钮 -->
+          <div class="flex justify-between">
+            <h3 class="text-lg font-semibold text-text-dark mb-2">滤镜选择</h3>
+            <button class="reset-btn btn-3d" @click="resetColor">重置</button>
+          </div>
+
+          <div class="flex items-end mb-30px">
+            <!-- 拾色器 -->
+            <div
+              class="mr-20px w-50px h-50px overflow-hidden border rounded-lg relative"
+            >
+              <input
+                class="absolute inset-0 opacity-0 cursor-pointer z-1"
+                type="color"
+                :value="colorHex"
+                @input="updateColorFromPicker"
+              />
+              <!-- 显示当前颜色 -->
+              <div
+                class="w-full h-full"
+                :style="{ background: colorHex }"
+              ></div>
+              <!-- 调色盘emoji -->
+              <div
+                class="absolute top-50% left-50% -translate-x-1/2 -translate-y-1/2 text-xl"
+              >
+                🎨
+              </div>
+            </div>
+            <!-- RGB输入输入框 -->
+            <div class="color-inputs">
+              <div class="color-input-group">
+                <label>R</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="255"
+                  v-model.number="rgb[0]"
+                  @keyup.enter="updateColorFromInputs"
+                  class="btn-3d bg-red text-white text-bold"
+                />
+              </div>
+              <div class="color-input-group">
+                <label>G</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="255"
+                  v-model.number="rgb[1]"
+                  @keyup.enter="updateColorFromInputs"
+                  class="btn-3d bg-green text-white text-bold"
+                />
+              </div>
+              <div class="color-input-group">
+                <label>B</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="255"
+                  v-model.number="rgb[2]"
+                  @keyup.enter="updateColorFromInputs"
+                  class="btn-3d bg-blue text-white text-bold"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="border-block"></div>
+
+          <h3 class="text-lg font-semibold text-text-dark mb-2">预设方案</h3>
+          <!-- 预设方案按钮 -->
+          <div class="color-presets">
+            <button
+              v-for="preset in presets"
+              :key="preset.name"
+              class="color-preset-btn btn-3d"
+              :class="{ active: currentPreset === preset.name }"
+              :style="{
+                            background: `rgb(${preset.rgb[0]}, ${preset.rgb[1]}, ${preset.rgb[2]})`,
+                            color: getTextColor(preset.rgb)
+                        }"
+              @click="selectPreset(preset)"
+            >
+              {{ preset.name }}
+            </button>
+          </div>
+
+          <div class="border-block"></div>
+          <div class="flex flex-col gap-20px">
+            <!-- 滤镜强度滑块 -->
+            <div class="slider-row">
+              <span class="slider-label"> 滤镜强度 </span>
+              <input
+                type="range"
+                min="0"
+                :max="intensityMax"
+                v-model.number="intensity"
+                @input="applyFilter"
+                class="border cursor-pointer"
+              />
+              <span class="value-display">{{ intensity }}%</span>
+            </div>
+
+            <!-- 亮度滤镜滑块 -->
+            <div class="slider-row">
+              <span class="slider-label">亮度滤镜</span>
+              <input
+                type="range"
+                min="0"
+                max="90"
+                class="border cursor-pointer"
+                v-model.number="brightnessFilter"
+                :disabled="!brightnessFilterEnabled"
+                @input="applyFilter"
+              />
+              <span class="value-display">{{ brightnessFilter }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 快捷键设置模态框 -->
+        <div
+          class="modal-overlay"
+          :class="{ show: showHotkeyModal }"
+          @click.self="showHotkeyModal = false"
+        >
+          <div class="modal-content">
+            <div class="modal-header">
+              <span class="modal-title">快捷键设置</span>
+              <button class="modal-close" @click="showHotkeyModal = false">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="2" y1="2" x2="12" y2="12"></line>
+                  <line x1="12" y1="2" x2="2" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="flex items-center gap-10px">
+                <span class="text-sm text-text-medium w-100px"
+                  >增加滤镜强度</span
+                >
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
+                  :value="capturingKey === 'increaseIntensity' && tempHotkey ? tempHotkey : hotkeySettings.increaseIntensity"
+                  @keydown="captureHotkey('increaseIntensity', $event)"
+                  @click="startCapture('increaseIntensity')"
+                  :class="{ 'border-green hotkey-active': capturingKey === 'increaseIntensity' }"
+                  readonly
+                  placeholder="点击设置, Enter确认, Esc取消"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-sm text-text-medium w-100px"
+                  >减少滤镜强度</span
+                >
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
+                  :value="capturingKey === 'decreaseIntensity' && tempHotkey ? tempHotkey : hotkeySettings.decreaseIntensity"
+                  @keydown="captureHotkey('decreaseIntensity', $event)"
+                  @click="startCapture('decreaseIntensity')"
+                  :class="{ 'border-green hotkey-active': capturingKey === 'decreaseIntensity' }"
+                  readonly
+                  placeholder="点击设置, Enter确认, Esc取消"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-sm text-text-medium w-100px"
+                  >增加亮度滤镜</span
+                >
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
+                  :value="capturingKey === 'increaseBrightness' && tempHotkey ? tempHotkey : hotkeySettings.increaseBrightness"
+                  @keydown="captureHotkey('increaseBrightness', $event)"
+                  @click="startCapture('increaseBrightness')"
+                  :class="{ 'border-green hotkey-active': capturingKey === 'increaseBrightness' }"
+                  readonly
+                  placeholder="点击设置, Enter确认, Esc取消"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-sm text-text-medium w-100px"
+                  >减少亮度滤镜</span
+                >
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
+                  :value="capturingKey === 'decreaseBrightness' && tempHotkey ? tempHotkey : hotkeySettings.decreaseBrightness"
+                  @keydown="captureHotkey('decreaseBrightness', $event)"
+                  @click="startCapture('decreaseBrightness')"
+                  :class="{ 'border-green hotkey-active': capturingKey === 'decreaseBrightness' }"
+                  readonly
+                  placeholder="点击设置, Enter确认, Esc取消"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-sm text-text-medium w-100px">下一个预设</span>
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
+                  :value="capturingKey === 'nextPreset' && tempHotkey ? tempHotkey : hotkeySettings.nextPreset"
+                  @keydown="captureHotkey('nextPreset', $event)"
+                  @click="startCapture('nextPreset')"
+                  :class="{ 'border-green hotkey-active': capturingKey === 'nextPreset' }"
+                  readonly
+                  placeholder="点击设置, Enter确认, Esc取消"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-sm text-text-medium w-100px">上一个预设</span>
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
+                  :value="capturingKey === 'prevPreset' && tempHotkey ? tempHotkey : hotkeySettings.prevPreset"
+                  @keydown="captureHotkey('prevPreset', $event)"
+                  @click="startCapture('prevPreset')"
+                  :class="{ 'border-green hotkey-active': capturingKey === 'prevPreset' }"
+                  readonly
+                  placeholder="点击设置, Enter确认, Esc取消"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-sm text-text-medium w-100px">切换滤镜</span>
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
+                  :value="capturingKey === 'toggleFilter' && tempHotkey ? tempHotkey : hotkeySettings.toggleFilter"
+                  @keydown="captureHotkey('toggleFilter', $event)"
+                  @click="startCapture('toggleFilter')"
+                  :class="{ 'border-green hotkey-active': capturingKey === 'toggleFilter' }"
+                  readonly
+                  placeholder="点击设置, Enter确认, Esc取消"
+                />
+              </div>
+            </div>
+            <!-- <div class="modal-footer">
+            <button class="btn-primary" @click="showHotkeyModal = false">
+              关闭
+            </button>
+          </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PyWebview 不需要额外的JS文件，通过 window.pywebview.api 访问Python后端 -->
+    <script>
+      const { createApp, ref, computed, nextTick } = Vue;
+
+      /**
+       * 显示消息提示
+       * @param {string} content - 消息内容
+       * @param {string} type - 消息类型: info, success, error, warning
+       * @param {number} duration - 显示时长（毫秒）
+       */
+      function message(content, type = "info", duration = 3000) {
+        const container = document.getElementById("message-container");
+        const item = document.createElement("div");
+        item.className = `message-item ${type}`;
+        item.textContent = content;
+        container.appendChild(item);
+
+        requestAnimationFrame(() => {
+          item.classList.add("show");
+        });
+
+        setTimeout(() => {
+          item.classList.remove("show");
+          setTimeout(() => {
+            if (item.parentNode) {
+              item.parentNode.removeChild(item);
+            }
+          }, 300);
+        }, duration);
+      }
+
+      /**
+       * 屏幕护眼工具Vue组件
+       */
+      createApp({
+        setup() {
+          /**
+           * 默认预设配置数组
+           * @type {Array<{name: string, rgb: number[], intensity: number, brightnessFilter: number, systemBrightness: number}>}
+           */
+          const defaultPresets = [
+            {
+              name: "默认",
+              rgb: [30, 32, 38],
+              intensity: 50,
+              brightnessFilter: 0,
+              systemBrightness: 0,
+            },
+            {
+              name: "暖色",
+              rgb: [255, 160, 80],
+              intensity: 50,
+              brightnessFilter: 0,
+              systemBrightness: 100,
+            },
+            {
+              name: "冷色",
+              rgb: [80, 140, 255],
+              intensity: 50,
+              brightnessFilter: 0,
+              systemBrightness: 100,
+            },
+            {
+              name: "夜间",
+              rgb: [255, 100, 50],
+              intensity: 50,
+              brightnessFilter: 0,
+              systemBrightness: 100,
+            },
+            {
+              name: "阅读",
+              rgb: [200, 220, 180],
+              intensity: 50,
+              brightnessFilter: 0,
+              systemBrightness: 100,
+            },
+            {
+              name: "护眼",
+              rgb: [255, 180, 120],
+              intensity: 50,
+              brightnessFilter: 0,
+              systemBrightness: 100,
+            },
+          ];
+
+          /**
+           * 从后端加载预设数据（带重试机制）
+           * @returns {Promise<Array<{name: string, rgb: number[], intensity: number, brightnessFilter: number, systemBrightness: number}>>} 预设数据数组
+           */
+          async function loadPresetsFromBackend() {
+            const maxRetries = 10;
+            const retryDelay = 200;
+
+            for (let i = 0; i < maxRetries; i++) {
+              try {
+                if (window.pywebview && window.pywebview.api) {
+                  const result = await window.pywebview.api.get_presets();
+                  if (result && result.length > 0) {
+                    console.log("从后端加载预设成功:", result);
+                    return result;
+                  }
+                }
+              } catch (error) {
+                console.warn(
+                  `加载预设数据失败，重试 ${i + 1}/${maxRetries}:`,
+                  error,
+                );
+              }
+              if (i < maxRetries - 1) {
+                await new Promise((r) => setTimeout(r, retryDelay));
+              }
+            }
+
+            console.error("从后端加载预设失败，使用默认预设");
+            return JSON.parse(JSON.stringify(defaultPresets));
+          }
+
+          /**
+           * 保存预设数据到后端
+           * @param {Array<{name: string, rgb: number[], intensity: number, brightnessFilter: number, systemBrightness: number}>} presetsData - 预设数据数组
+           */
+          async function savePresetsToBackend(presetsData) {
+            try {
+              if (window.pywebview && window.pywebview.api) {
+                await window.pywebview.api.save_presets(presetsData);
+              }
+            } catch (error) {
+              console.error("保存预设数据失败:", error);
+            }
+          }
+
+          /**
+           * 预设配置数组（响应式）
+           * @type {import('vue').Ref<Array<{name: string, rgb: number[], intensity: number, brightnessFilter: number, systemBrightness: number}>}
+           */
+          const presets = ref([]);
+
+          /**
+           * 当前选中的预设名称
+           * @type {import('vue').Ref<string>}
+           */
+          const currentPreset = ref("默认");
+
+          /**
+           * RGB颜色值数组 [R, G, B]
+           * @type {import('vue').Ref<number[]>}
+           */
+          const rgb = ref([255, 255, 255]);
+
+          /**
+           * 滤镜强度 (0-100)
+           */
+          const intensity = ref(50);
+
+          /**
+           * 亮度滤镜值 (0-90)
+           */
+          const brightnessFilter = ref(0);
+
+          /**
+           * 系统亮度值 (1-100)
+           */
+          const systemBrightness = ref(100);
+
+          /**
+           * 滤镜是否启用
+           */
+          const filterEnabled = ref(true);
+
+          /**
+           * 当前正在捕获快捷键的字段
+           */
+          const capturingKey = ref(null);
+
+          /**
+           * 是否显示快捷键设置模态框
+           */
+          const showHotkeyModal = ref(false);
+
+          /**
+           * 临时保存正在输入的快捷键
+           */
+          const tempHotkey = ref(null);
+
+          /**
+           * 快捷键设置
+           */
+          const hotkeySettings = ref({
+            increaseIntensity: "Ctrl+Right",
+            decreaseIntensity: "Ctrl+Left",
+            increaseBrightness: "Ctrl+Up",
+            decreaseBrightness: "Ctrl+Down",
+            nextPreset: "Alt+Right",
+            prevPreset: "Alt+Left",
+            toggleFilter: "Alt+Down",
+          });
+
+          /**
+           * 从后端加载快捷键设置
+           */
+          async function loadHotkeySettings() {
+            try {
+              if (window.pywebview && window.pywebview.api) {
+                const settings =
+                  await window.pywebview.api.get_hotkey_settings();
+                hotkeySettings.value = settings;
+              }
+            } catch (error) {
+              console.error("加载快捷键设置失败:", error);
+            }
+          }
+
+          /**
+           * 保存快捷键设置到后端
+           */
+          async function saveHotkeySettings() {
+            try {
+              if (window.pywebview && window.pywebview.api) {
+                await window.pywebview.api.save_hotkey_settings(
+                  hotkeySettings.value,
+                );
+              }
+            } catch (error) {
+              console.error("保存快捷键设置失败:", error);
+            }
+          }
+
+          /**
+           * 暴露给外部调用的显示快捷键设置模态框方法
+           */
+          window.showHotkeyModal = function () {
+            showHotkeyModal.value = true;
+          };
+
+          /**
+           * 快捷键触发回调（供后端调用）
+           */
+          window.onHotkey = function (actionType) {
+            switch (actionType) {
+              case "increaseIntensity":
+                increaseIntensity();
+                break;
+              case "decreaseIntensity":
+                decreaseIntensity();
+                break;
+              case "increaseBrightness":
+                increaseBrightness();
+                break;
+              case "decreaseBrightness":
+                decreaseBrightness();
+                break;
+              case "nextPreset":
+                nextPreset();
+                break;
+              case "prevPreset":
+                prevPreset();
+                break;
+              case "toggleFilter":
+                toggleFilter();
+                break;
+            }
+          };
+
+          /**
+           * 开始捕获快捷键
+           * @param {string} keyName - 要捕获的快捷键名称
+           */
+          function startCapture(keyName) {
+            capturingKey.value = keyName;
+          }
+
+          /**
+           * 检查快捷键是否与其他快捷键冲突
+           * @param {string} hotkey - 要检查的快捷键
+           * @param {string} excludeKeyName - 排除的快捷键名称
+           * @returns {string} 冲突的快捷键名称，如果没有冲突返回null
+           */
+          function checkHotkeyConflict(hotkey, excludeKeyName = null) {
+            const keyMap = {
+              increaseIntensity: "增加滤镜强度",
+              decreaseIntensity: "减少滤镜强度",
+              increaseBrightness: "增加亮度滤镜",
+              decreaseBrightness: "减少亮度滤镜",
+              nextPreset: "下一个预设",
+              prevPreset: "上一个预设",
+              toggleFilter: "切换滤镜",
+            };
+            for (const [keyName, setting] of Object.entries(
+              hotkeySettings.value,
+            )) {
+              if (keyName === excludeKeyName) continue;
+              if (setting && setting.toLowerCase() === hotkey.toLowerCase()) {
+                return keyMap[keyName] || keyName;
+              }
+            }
+            return null;
+          }
+
+          /**
+           * 捕获快捷键输入
+           * @param {string} keyName - 快捷键名称
+           * @param {KeyboardEvent} e - 键盘事件
+           */
+          function captureHotkey(keyName, e) {
+            if (capturingKey.value !== keyName) return;
+
+            if (e.ctrlKey && (e.code === "PageUp" || e.code === "PageDown")) {
+              e.preventDefault();
+              e.stopPropagation();
+              const hotkey =
+                "Ctrl+" + (e.code === "PageUp" ? "PageUp" : "PageDown");
+              const conflict = checkHotkeyConflict(hotkey, keyName);
+              if (conflict) {
+                message(`快捷键已被「${conflict}」使用`, "warning");
+                return;
+              }
+              tempHotkey.value = hotkey;
+              return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (e.key === "Enter") {
+              if (tempHotkey.value && tempHotkey.value !== "") {
+                const conflict = checkHotkeyConflict(tempHotkey.value, keyName);
+                if (conflict) {
+                  message(
+                    `快捷键已被「${conflict}」使用，请选择其他快捷键`,
+                    "warning",
+                  );
+                  return;
+                }
+                hotkeySettings.value[keyName] = tempHotkey.value;
+                saveHotkeySettings();
+                registerHotkeys();
+              }
+              capturingKey.value = null;
+              tempHotkey.value = null;
+              return;
+            }
+
+            if (e.key === "Escape" || e.key === "Backspace") {
+              if (e.key === "Backspace" && !tempHotkey.value) {
+                hotkeySettings.value[keyName] = "";
+                saveHotkeySettings();
+                registerHotkeys();
+              }
+              capturingKey.value = null;
+              tempHotkey.value = null;
+              return;
+            }
+
+            const parts = [];
+            if (e.ctrlKey) parts.push("Ctrl");
+            if (e.shiftKey) parts.push("Shift");
+            if (e.altKey) parts.push("Alt");
+
+            const keyMap = {
+              ArrowLeft: "Left",
+              ArrowRight: "Right",
+              ArrowUp: "Up",
+              ArrowDown: "Down",
+              " ": "Space",
+              PageUp: "PageUp",
+              PageDown: "PageDown",
+            };
+
+            let key;
+            const code = e.code || e.key;
+
+            if (code.startsWith("Page")) {
+              key = keyMap[code] || code;
+            } else if (code.startsWith("Arrow")) {
+              key = keyMap[code] || code.slice(5);
+            } else if (code.startsWith("Key")) {
+              key = code.slice(3);
+            } else if (code.startsWith("Digit")) {
+              key = code.slice(5);
+            } else if (code.length === 1) {
+              key = code.toUpperCase();
+            } else {
+              key = keyMap[code] || code;
+            }
+
+            if (
+              ![
+                "Control",
+                "Shift",
+                "Alt",
+                "ControlLeft",
+                "ControlRight",
+                "ShiftLeft",
+                "ShiftRight",
+                "AltLeft",
+                "AltRight",
+              ].includes(e.code)
+            ) {
+              parts.push(key);
+            }
+
+            const result = parts.join("+");
+            if (result && !result.endsWith("+")) {
+              const conflict = checkHotkeyConflict(result, keyName);
+              if (conflict) {
+                message(`快捷键已被「${conflict}」使用`, "warning");
+                return;
+              }
+              tempHotkey.value = result;
+            }
+          }
+
+          /**
+           * 取消快捷键捕获
+           */
+          function cancelCapture() {
+            capturingKey.value = null;
+            tempHotkey.value = null;
+          }
+
+          /**
+           * 增加滤镜强度
+           */
+          function increaseIntensity() {
+            const step = 5;
+            intensity.value = Math.min(
+              intensityMax.value,
+              intensity.value + step,
+            );
+            applyFilter();
+          }
+
+          /**
+           * 减少滤镜强度
+           */
+          function decreaseIntensity() {
+            const step = 5;
+            intensity.value = Math.max(0, intensity.value - step);
+            applyFilter();
+          }
+
+          /**
+           * 增加亮度滤镜
+           */
+          function increaseBrightness() {
+            const step = 5;
+            brightnessFilter.value = Math.min(
+              90,
+              brightnessFilter.value + step,
+            );
+            applyFilter();
+          }
+
+          /**
+           * 减少亮度滤镜
+           */
+          function decreaseBrightness() {
+            const step = 5;
+            brightnessFilter.value = Math.max(0, brightnessFilter.value - step);
+            applyFilter();
+          }
+
+          /**
+           * 初始化快捷键（从后端加载）
+           */
+          async function initHotkeys() {
+            await loadHotkeySettings();
+          }
+
+          /**
+           * 应用滤镜设置并更新当前预设数据
+           */
+          async function applyFilter(isSwitch = false) {
+            if (isSwitch) filterEnabled.value = true;
+            const currentPresetObj = presets.value.find(
+              (p) => p.name === currentPreset.value,
+            );
+            if (currentPresetObj) {
+              currentPresetObj.rgb = [...rgb.value];
+              currentPresetObj.intensity = intensity.value;
+              currentPresetObj.brightnessFilter = brightnessFilter.value;
+              currentPresetObj.systemBrightness = systemBrightness.value;
+              savePresetsToBackend(presets.value);
+            }
+
+            if (window.pywebview && window.pywebview.api) {
+              try {
+                const result = await window.pywebview.api.apply_filter(
+                  rgb.value,
+                  brightnessFilter.value,
+                  intensity.value,
+                );
+                console.log("滤镜应用结果:", result);
+              } catch (error) {
+                console.error("调用后端API失败:", error);
+              }
+            }
+          }
+
+          /**
+           * 初始化当前预设的值
+           */
+          async function initCurrentPresetValues() {
+            const currentPresetObj = presets.value.find(
+              (p) => p.name === currentPreset.value,
+            );
+            if (currentPresetObj) {
+              rgb.value = currentPresetObj.rgb.map((v) => Math.max(30, v));
+              intensity.value = currentPresetObj.intensity;
+              brightnessFilter.value = currentPresetObj.brightnessFilter;
+              systemBrightness.value = currentPresetObj.systemBrightness;
+            }
+            await applyFilter();
+          }
+
+          /**
+           * 等待 pywebview API 准备就绪
+           * @returns {Promise<boolean>} API 是否准备就绪
+           */
+          function waitForPywebviewApi(maxAttempts = 100) {
+            return new Promise((resolve) => {
+              let attempts = 0;
+              const checkInterval = setInterval(() => {
+                attempts++;
+                if (
+                  window.pywebview &&
+                  window.pywebview.api &&
+                  window.pywebview.api.get_presets
+                ) {
+                  clearInterval(checkInterval);
+                  resolve(true);
+                } else if (attempts >= maxAttempts) {
+                  clearInterval(checkInterval);
+                  console.error("PyWebview API 加载超时");
+                  resolve(false);
+                }
+              }, 100);
+            });
+          }
+
+          /**
+           * 初始化应用滤镜
+           */
+          async function initializeApp() {
+            const apiReady = await waitForPywebviewApi();
+            if (!apiReady) {
+              console.error("PyWebview API 未就绪");
+              return;
+            }
+
+            const loadedPresets = await loadPresetsFromBackend();
+            presets.value = loadedPresets;
+
+            await initCurrentPresetValues();
+            await initHotkeys();
+          }
+
+          initializeApp();
+
+          /**
+           * 获取当前预设对象
+           * @returns {Object} 当前预设对象
+           */
+          const currentPresetObj = computed(() => {
+            return presets.value.find((p) => p.name === currentPreset.value);
+          });
+
+          /**
+           * 将RGB值转换为十六进制颜色字符串
+           * @returns {string} 十六进制颜色字符串，格式如 #RRGGBB
+           */
+          const colorHex = computed(() => {
+            return (
+              "#" +
+              rgb.value
+                .map((v) => {
+                  const hex = v.toString(16);
+                  return hex.length === 1 ? "0" + hex : hex;
+                })
+                .join("")
+            );
+          });
+
+          /**
+           * 根据背景颜色计算适合的文字颜色
+           * @param {number[]} rgb - RGB颜色数组 [R, G, B]
+           * @returns {string} 适合的文字颜色 ('black' 或 'white')
+           */
+          function getTextColor(rgb) {
+            const luminance =
+              (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+            return luminance > 0.5 ? "black" : "white";
+          }
+
+          /**
+           * 判断亮度滤镜是否启用
+           * @returns {boolean} 当RGB不全为0且系统亮度大于等于50时返回true
+           */
+          const brightnessFilterEnabled = computed(() => {
+            return rgb.value.some((v) => v > 0);
+          });
+
+          const intensityMax = computed(() => {
+            const allLow = rgb.value.every((v) => v <= 40);
+            return allLow ? 70 : 100;
+          });
+
+          /**
+           * 从颜色选择器更新颜色
+           * @param {Event} e - 颜色选择器的change事件对象
+           */
+          function updateColorFromPicker(e) {
+            const hex = e.target.value;
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            rgb.value = [Math.max(30, r), Math.max(30, g), Math.max(30, b)];
+            applyFilter();
+          }
+
+          /**
+           * 从RGB输入框更新颜色并限制值范围
+           */
+          function updateColorFromInputs() {
+            rgb.value = rgb.value.map((v) => Math.max(30, Math.min(255, v)));
+            applyFilter();
+          }
+
+          /**
+           * 选择预设配置
+           * @param {{name: string, rgb: number[], intensity: number, brightnessFilter: number, systemBrightness: number}} preset - 预设对象
+           */
+          function selectPreset(preset) {
+            filterEnabled.value = true;
+            currentPreset.value = preset.name;
+            rgb.value = preset.rgb.map((v) => Math.max(30, v));
+            intensity.value = preset.intensity;
+            brightnessFilter.value = preset.brightnessFilter;
+            systemBrightness.value = preset.systemBrightness;
+            applyFilter();
+          }
+
+          function nextPreset() {
+            const currentIndex = presets.value.findIndex(
+              (p) => p.name === currentPreset.value,
+            );
+            const nextIndex = (currentIndex + 1) % presets.value.length;
+            selectPreset(presets.value[nextIndex]);
+          }
+
+          function prevPreset() {
+            const currentIndex = presets.value.findIndex(
+              (p) => p.name === currentPreset.value,
+            );
+            const prevIndex =
+              (currentIndex - 1 + presets.value.length) % presets.value.length;
+            selectPreset(presets.value[prevIndex]);
+          }
+
+          function toggleFilter() {
+            filterEnabled.value = !filterEnabled.value;
+            if (filterEnabled.value) {
+              applyFilter(true);
+            } else {
+              resetFilterOnly();
+            }
+          }
+
+          function resetFilterOnly() {
+            if (window.pywebview && window.pywebview.api) {
+              window.pywebview.api.reset_all();
+            }
+          }
+
+          function resetColor() {
+            const presetIndex = presets.value.findIndex(
+              (p) => p.name === currentPreset.value,
+            );
+            const defaultPreset = JSON.parse(
+              JSON.stringify(defaultPresets[presetIndex]),
+            );
+            rgb.value = [...defaultPreset.rgb];
+            intensity.value = defaultPreset.intensity;
+            brightnessFilter.value = defaultPreset.brightnessFilter;
+            systemBrightness.value = defaultPreset.systemBrightness;
+
+            presets.value[presetIndex] = {
+              ...JSON.parse(JSON.stringify(defaultPreset)),
+            };
+
+            savePresetsToBackend(presets.value);
+
+            nextTick(() => {
+              if (window.pywebview && window.pywebview.api) {
+                window.pywebview.api.reset_all().then(() => {
+                  window.pywebview.api.apply_filter(
+                    rgb.value,
+                    brightnessFilter.value,
+                    intensity.value,
+                  );
+                });
+              }
+            });
+          }
+
+          function minimizeWindow() {
+            if (window.pywebview && window.pywebview.api) {
+              window.pywebview.api.minimize_window();
+            }
+          }
+
+          function closeWindow() {
+            if (window.pywebview && window.pywebview.api) {
+              window.pywebview.api.close_window();
+            }
+          }
+
+          // initBackendSettings();
+
+          return {
+            presets,
+            currentPreset,
+            currentPresetObj,
+            rgb,
+            intensity,
+            brightnessFilter,
+            systemBrightness,
+            filterEnabled,
+            colorHex,
+            brightnessFilterEnabled,
+            intensityMax,
+            getTextColor,
+            updateColorFromPicker,
+            updateColorFromInputs,
+            selectPreset,
+            applyFilter,
+            resetColor,
+            toggleFilter,
+            minimizeWindow,
+            closeWindow,
+            hotkeySettings,
+            capturingKey,
+            showHotkeyModal,
+            tempHotkey,
+            startCapture,
+            captureHotkey,
+            cancelCapture,
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

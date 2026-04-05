@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "激活 Python .venv 虚拟环境",
+      "type": "shell",
+      "command": "source .venv/Scripts/activate  && exec bash",
+      "args": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "focus": true,
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "打包",
+      "type": "shell",
+      "command": "source .venv/Scripts/activate && pyinstaller --onefile --windowed --name \"rukk\" --add-data \"vue-web;vue-web\" --add-data \"logo.png;.\" -i \"logo.png\" --hidden-import=webview --hidden-import=pystray --hidden-import=PIL main.py",
+      "args": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "focus": true,
+        "clear": true,
+        "panel": "shared",
+        "showReuseMessage": false
+      }
+    }
+  ]
+}
