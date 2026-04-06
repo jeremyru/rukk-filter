@@ -258,22 +258,24 @@
       }
 
       .window-btn {
-        width: 14px;
-        height: 14px;
+        width: 16px;
+        height: 16px;
         border-radius: 50%;
         border: none;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 8px;
-        color: rgba(0, 0, 0, 0.5);
+        font-size: 14px;
+        font-weight: bold;
+        color: rgba(0, 0, 0, 0.3);
+        background: transparent;
         transition: all 0.2s ease;
         -webkit-app-region: no-drag;
       }
 
       .window-btn:hover {
-        color: rgba(0, 0, 0, 0.8);
+        color: rgba(0, 0, 0, 0.6);
       }
 
       .window-btn-minimize {
@@ -284,9 +286,14 @@
         background: #f45b5b;
       }
 
-      .window-btn svg {
-        width: 8px;
-        height: 8px;
+      .window-btn-text {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .is-hovered .window-btn-minimize .window-btn-text,
+      .is-hovered .window-btn-close .window-btn-text {
+        opacity: 1;
       }
 
       .filter-toggle-btn {
@@ -450,7 +457,7 @@
       .modal-content {
         background: white;
         border-radius: 12px;
-        padding: 24px;
+        padding: 16px;
         width: 400px;
         max-width: 90%;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -465,19 +472,17 @@
       .modal-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
+        justify-content: flex-end;
+        margin-bottom: 12px;
       }
 
       .modal-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: var(--text-dark);
+        display: none;
       }
 
       .modal-close {
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
         border: none;
         background: transparent;
         cursor: pointer;
@@ -495,7 +500,7 @@
       .modal-body {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
       }
 
       .modal-footer {
@@ -587,6 +592,9 @@
       <div class="content-container">
         <div
           class="w-100% h-30px flex flex-row items-center justify-between px-10px pywebview-drag-region relative"
+          :class="{ 'is-hovered': isDragRegionHovered }"
+          @mouseenter="isDragRegionHovered = true"
+          @mouseleave="isDragRegionHovered = false"
         >
           <!-- 滤镜开关 -->
           <div class="flex items-center">
@@ -683,35 +691,20 @@
           </div>
           <!-- 窗口操作按钮 -->
           <div class="flex items-center gap-5px">
-            <button
+            <div
               class="window-btn window-btn-minimize"
               @click="minimizeWindow"
               title="最小化"
             >
-              <svg
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <line x1="2" y1="6" x2="10" y2="6"></line>
-              </svg>
-            </button>
-            <button
+              <span class="window-btn-text">−</span>
+            </div>
+            <div
               class="window-btn window-btn-close"
               @click="closeWindow"
               title="退出"
             >
-              <svg
-                viewBox="0 0 12 12"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <line x1="2" y1="2" x2="10" y2="10"></line>
-                <line x1="10" y1="2" x2="2" y2="10"></line>
-              </svg>
-            </button>
+              <span class="window-btn-text font-semibold text-12px">x</span>
+            </div>
           </div>
           <!-- 版权信息 -->
           <div
@@ -759,7 +752,9 @@
                   min="0"
                   max="255"
                   v-model.number="rgb[0]"
-                  @keyup.enter="updateColorFromInputs"
+                  @focus="saveRgbOldValue(0, rgb[0])"
+                  @keyup.enter="validateRgbInput(0, rgb[0])"
+                  @blur="validateRgbInput(0, rgb[0])"
                   class="btn-3d bg-red text-white text-bold"
                 />
               </div>
@@ -770,7 +765,9 @@
                   min="0"
                   max="255"
                   v-model.number="rgb[1]"
-                  @keyup.enter="updateColorFromInputs"
+                  @focus="saveRgbOldValue(1, rgb[1])"
+                  @keyup.enter="validateRgbInput(1, rgb[1])"
+                  @blur="validateRgbInput(1, rgb[1])"
                   class="btn-3d bg-green text-white text-bold"
                 />
               </div>
@@ -781,7 +778,9 @@
                   min="0"
                   max="255"
                   v-model.number="rgb[2]"
-                  @keyup.enter="updateColorFromInputs"
+                  @focus="saveRgbOldValue(2, rgb[2])"
+                  @keyup.enter="validateRgbInput(2, rgb[2])"
+                  @blur="validateRgbInput(2, rgb[2])"
                   class="btn-3d bg-blue text-white text-bold"
                 />
               </div>
@@ -845,12 +844,12 @@
         <div
           class="modal-overlay"
           :class="{ show: showHotkeyModal }"
-          @click.self="showHotkeyModal = false"
+          @click.self="handleModalClick($event)"
         >
-          <div class="modal-content">
+          <div class="modal-content" @click="handleModalClick($event)">
             <div class="modal-header">
               <span class="modal-title">快捷键设置</span>
-              <button class="modal-close" @click="showHotkeyModal = false">
+              <button class="modal-close" @click.stop="showHotkeyModal = false">
                 <svg
                   width="14"
                   height="14"
@@ -866,102 +865,123 @@
             </div>
             <div class="modal-body">
               <div class="flex items-center gap-10px">
-                <span class="text-sm text-text-medium w-100px"
+                <span class="text-xs text-text-medium w-80px"
                   >增加滤镜强度</span
                 >
                 <input
                   type="text"
-                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
-                  :value="capturingKey === 'increaseIntensity' && tempHotkey ? tempHotkey : hotkeySettings.increaseIntensity"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.increaseIntensity"
                   @keydown="captureHotkey('increaseIntensity', $event)"
-                  @click="startCapture('increaseIntensity')"
-                  :class="{ 'border-green hotkey-active': capturingKey === 'increaseIntensity' }"
+                  @click="startCapture('increaseIntensity', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'increaseIntensity' }"
                   readonly
-                  placeholder="点击设置, Enter确认, Esc取消"
+                  placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-sm text-text-medium w-100px"
+                <span class="text-xs text-text-medium w-80px"
                   >减少滤镜强度</span
                 >
                 <input
                   type="text"
-                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
-                  :value="capturingKey === 'decreaseIntensity' && tempHotkey ? tempHotkey : hotkeySettings.decreaseIntensity"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.decreaseIntensity"
                   @keydown="captureHotkey('decreaseIntensity', $event)"
-                  @click="startCapture('decreaseIntensity')"
-                  :class="{ 'border-green hotkey-active': capturingKey === 'decreaseIntensity' }"
+                  @click="startCapture('decreaseIntensity', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'decreaseIntensity' }"
                   readonly
-                  placeholder="点击设置, Enter确认, Esc取消"
+                  placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-sm text-text-medium w-100px"
+                <span class="text-xs text-text-medium w-80px"
                   >增加亮度滤镜</span
                 >
                 <input
                   type="text"
-                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
-                  :value="capturingKey === 'increaseBrightness' && tempHotkey ? tempHotkey : hotkeySettings.increaseBrightness"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.increaseBrightness"
                   @keydown="captureHotkey('increaseBrightness', $event)"
-                  @click="startCapture('increaseBrightness')"
-                  :class="{ 'border-green hotkey-active': capturingKey === 'increaseBrightness' }"
+                  @click="startCapture('increaseBrightness', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'increaseBrightness' }"
                   readonly
-                  placeholder="点击设置, Enter确认, Esc取消"
+                  placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-sm text-text-medium w-100px"
+                <span class="text-xs text-text-medium w-80px"
                   >减少亮度滤镜</span
                 >
                 <input
                   type="text"
-                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
-                  :value="capturingKey === 'decreaseBrightness' && tempHotkey ? tempHotkey : hotkeySettings.decreaseBrightness"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.decreaseBrightness"
                   @keydown="captureHotkey('decreaseBrightness', $event)"
-                  @click="startCapture('decreaseBrightness')"
-                  :class="{ 'border-green hotkey-active': capturingKey === 'decreaseBrightness' }"
+                  @click="startCapture('decreaseBrightness', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'decreaseBrightness' }"
                   readonly
-                  placeholder="点击设置, Enter确认, Esc取消"
+                  placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-sm text-text-medium w-100px">下一个预设</span>
+                <span class="text-xs text-text-medium w-80px">下一个预设</span>
                 <input
                   type="text"
-                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
-                  :value="capturingKey === 'nextPreset' && tempHotkey ? tempHotkey : hotkeySettings.nextPreset"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.nextPreset"
                   @keydown="captureHotkey('nextPreset', $event)"
-                  @click="startCapture('nextPreset')"
-                  :class="{ 'border-green hotkey-active': capturingKey === 'nextPreset' }"
+                  @click="startCapture('nextPreset', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'nextPreset' }"
                   readonly
-                  placeholder="点击设置, Enter确认, Esc取消"
+                  placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-sm text-text-medium w-100px">上一个预设</span>
+                <span class="text-xs text-text-medium w-80px">上一个预设</span>
                 <input
                   type="text"
-                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
-                  :value="capturingKey === 'prevPreset' && tempHotkey ? tempHotkey : hotkeySettings.prevPreset"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.prevPreset"
                   @keydown="captureHotkey('prevPreset', $event)"
-                  @click="startCapture('prevPreset')"
-                  :class="{ 'border-green hotkey-active': capturingKey === 'prevPreset' }"
+                  @click="startCapture('prevPreset', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'prevPreset' }"
                   readonly
-                  placeholder="点击设置, Enter确认, Esc取消"
+                  placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-sm text-text-medium w-100px">切换滤镜</span>
+                <span class="text-xs text-text-medium w-80px">切换滤镜</span>
                 <input
                   type="text"
-                  class="hotkey-input flex-1 px-10px py-8px text-sm border rounded cursor-pointer"
-                  :value="capturingKey === 'toggleFilter' && tempHotkey ? tempHotkey : hotkeySettings.toggleFilter"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.toggleFilter"
                   @keydown="captureHotkey('toggleFilter', $event)"
-                  @click="startCapture('toggleFilter')"
-                  :class="{ 'border-green hotkey-active': capturingKey === 'toggleFilter' }"
+                  @click="startCapture('toggleFilter', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'toggleFilter' }"
                   readonly
-                  placeholder="点击设置, Enter确认, Esc取消"
+                  placeholder="点击设置"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-xs text-text-medium w-80px">切换窗口</span>
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="hotkeySettings.toggleWindow"
+                  @keydown="captureHotkey('toggleWindow', $event)"
+                  @click="startCapture('toggleWindow', $event)"
+                  @blur="cancelCapture"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'toggleWindow' }"
+                  readonly
+                  placeholder="点击设置"
                 />
               </div>
             </div>
@@ -1123,6 +1143,7 @@
            * @type {import('vue').Ref<number[]>}
            */
           const rgb = ref([255, 255, 255]);
+          const tempRgbOldValue = ref([null, null, null]);
 
           /**
            * 滤镜强度 (0-100)
@@ -1145,9 +1166,19 @@
           const filterEnabled = ref(true);
 
           /**
+           * 拖拽区域是否处于hover状态
+           */
+          const isDragRegionHovered = ref(false);
+
+          /**
            * 当前正在捕获快捷键的字段
            */
           const capturingKey = ref(null);
+
+          /**
+           * 当前激活的快捷键输入框
+           */
+          const activeHotkey = ref(null);
 
           /**
            * 是否显示快捷键设置模态框
@@ -1235,15 +1266,56 @@
               case "toggleFilter":
                 toggleFilter();
                 break;
+              case "toggleWindow":
+                toggleWindow();
+                break;
             }
           };
+
+          /**
+           * 切换窗口显示/隐藏
+           */
+          function toggleWindow() {
+            if (window.pywebview && window.pywebview.api) {
+              window.pywebview.api.toggle_window();
+            }
+          }
 
           /**
            * 开始捕获快捷键
            * @param {string} keyName - 要捕获的快捷键名称
            */
-          function startCapture(keyName) {
-            capturingKey.value = keyName;
+          function startCapture(keyName, event) {
+            if (event && event.stopPropagation) {
+              event.stopPropagation();
+            }
+            if (activeHotkey.value === keyName) {
+              activeHotkey.value = null;
+              capturingKey.value = null;
+              tempHotkey.value = null;
+            } else {
+              activeHotkey.value = keyName;
+              capturingKey.value = keyName;
+              tempHotkey.value = hotkeySettings.value[keyName] || null;
+            }
+          }
+
+          /**
+           * 取消快捷键捕获
+           */
+          function cancelCapture() {
+            activeHotkey.value = null;
+            capturingKey.value = null;
+            tempHotkey.value = null;
+          }
+
+          /**
+           * 处理点击模态框背景或其他区域
+           */
+          function handleModalClick(event) {
+            if (activeHotkey.value !== null) {
+              cancelCapture();
+            }
           }
 
           /**
@@ -1261,6 +1333,7 @@
               nextPreset: "下一个预设",
               prevPreset: "上一个预设",
               toggleFilter: "切换滤镜",
+              toggleWindow: "切换窗口",
             };
             for (const [keyName, setting] of Object.entries(
               hotkeySettings.value,
@@ -1291,40 +1364,20 @@
                 message(`快捷键已被「${conflict}」使用`, "warning");
                 return;
               }
-              tempHotkey.value = hotkey;
+              hotkeySettings.value[keyName] = hotkey;
+              saveHotkeySettings();
+              registerHotkeys();
+              cancelCapture();
               return;
             }
 
             e.preventDefault();
             e.stopPropagation();
 
-            if (e.key === "Enter") {
-              if (tempHotkey.value && tempHotkey.value !== "") {
-                const conflict = checkHotkeyConflict(tempHotkey.value, keyName);
-                if (conflict) {
-                  message(
-                    `快捷键已被「${conflict}」使用，请选择其他快捷键`,
-                    "warning",
-                  );
-                  return;
-                }
-                hotkeySettings.value[keyName] = tempHotkey.value;
-                saveHotkeySettings();
-                registerHotkeys();
-              }
-              capturingKey.value = null;
-              tempHotkey.value = null;
-              return;
-            }
-
-            if (e.key === "Escape" || e.key === "Backspace") {
-              if (e.key === "Backspace" && !tempHotkey.value) {
-                hotkeySettings.value[keyName] = "";
-                saveHotkeySettings();
-                registerHotkeys();
-              }
-              capturingKey.value = null;
-              tempHotkey.value = null;
+            if (e.key === "Escape") {
+              e.preventDefault();
+              e.stopPropagation();
+              cancelCapture();
               return;
             }
 
@@ -1383,7 +1436,10 @@
                 message(`快捷键已被「${conflict}」使用`, "warning");
                 return;
               }
-              tempHotkey.value = result;
+              hotkeySettings.value[keyName] = result;
+              saveHotkeySettings();
+              registerHotkeys();
+              cancelCapture();
             }
           }
 
@@ -1391,6 +1447,7 @@
            * 取消快捷键捕获
            */
           function cancelCapture() {
+            activeHotkey.value = null;
             capturingKey.value = null;
             tempHotkey.value = null;
           }
@@ -1596,10 +1653,48 @@
           }
 
           /**
-           * 从RGB输入框更新颜色并限制值范围
+           * 保存RGB输入框的旧值
+           * @param {number} index - RGB索引 (0=R, 1=G, 2=B)
+           * @param {number} value - 当前值
+           */
+          function saveRgbOldValue(index, value) {
+            tempRgbOldValue.value = tempRgbOldValue.value || [null, null, null];
+            tempRgbOldValue.value[index] = value;
+          }
+
+          /**
+           * 校验RGB输入值
+           * @param {number} index - RGB索引 (0=R, 1=G, 2=B)
+           * @param {number} value - 输入值
+           */
+          function validateRgbInput(index, value) {
+            if (value === null || value === undefined || isNaN(value)) {
+              if (
+                tempRgbOldValue.value &&
+                tempRgbOldValue.value[index] !== null
+              ) {
+                rgb.value[index] = tempRgbOldValue.value[index];
+              }
+              return;
+            }
+            if (value < 0 || value > 255) {
+              message("RGB值不能大于255", "error");
+              if (
+                tempRgbOldValue.value &&
+                tempRgbOldValue.value[index] !== null
+              ) {
+                rgb.value[index] = tempRgbOldValue.value[index];
+              }
+              return;
+            }
+            rgb.value[index] = Math.floor(value);
+            applyFilter();
+          }
+
+          /**
+           * 从RGB输入框更新颜色并限制值范围（回车确认）
            */
           function updateColorFromInputs() {
-            rgb.value = rgb.value.map((v) => Math.max(30, Math.min(255, v)));
             applyFilter();
           }
 
@@ -1699,29 +1794,36 @@
             currentPreset,
             currentPresetObj,
             rgb,
+            tempRgbOldValue,
             intensity,
             brightnessFilter,
             systemBrightness,
             filterEnabled,
+            isDragRegionHovered,
             colorHex,
             brightnessFilterEnabled,
             intensityMax,
             getTextColor,
             updateColorFromPicker,
             updateColorFromInputs,
+            validateRgbInput,
+            saveRgbOldValue,
             selectPreset,
             applyFilter,
             resetColor,
             toggleFilter,
+            toggleWindow,
             minimizeWindow,
             closeWindow,
             hotkeySettings,
             capturingKey,
+            activeHotkey,
             showHotkeyModal,
             tempHotkey,
             startCapture,
             captureHotkey,
             cancelCapture,
+            handleModalClick,
           };
         },
       }).mount("#app");
