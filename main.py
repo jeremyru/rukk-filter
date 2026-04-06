@@ -1,5 +1,5 @@
 """
-屏幕护眼工具 - PyWebview版本
+rukk filter工具 - PyWebview版本
 使用 pywebview 作为GUI框架，实现RGB颜色滤镜、亮度滤镜和系统亮度控制功能
 """
 
@@ -89,6 +89,7 @@ currentHotkeys = DEFAULT_HOTKEYS.copy()
 registeredHotkeys = []
 
 filterEnabled = True
+showBackgroundImage = True
 currentPresets = None
 
 
@@ -131,6 +132,8 @@ def load_config():
             currentPresets = configCache.get(
                 "presets", json.loads(json.dumps(DEFAULT_PRESETS))
             )
+            global showBackgroundImage
+            showBackgroundImage = configCache.get("showBackgroundImage", True)
             print(f"配置已加载: {len(currentPresets)} 个预设")
         else:
             currentHotkeys = DEFAULT_HOTKEYS.copy()
@@ -147,7 +150,11 @@ def save_config():
     global configCache
     config_path = os.path.join(get_base_path(), CONFIG_FILE)
     try:
-        configCache = {"hotkeys": currentHotkeys, "presets": currentPresets}
+        configCache = {
+            "hotkeys": currentHotkeys,
+            "presets": currentPresets,
+            "showBackgroundImage": showBackgroundImage,
+        }
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(configCache, f, ensure_ascii=False, indent=2)
         print(f"配置已保存")
@@ -654,6 +661,35 @@ class Api:
             print(f"切换窗口状态失败: {e}")
             return "failed"
 
+    def toggle_background_image(self) -> str:
+        """
+        切换背景图显示/隐藏状态（供托盘调用）
+
+        Returns:
+            str: 操作结果消息
+        """
+        global showBackgroundImage
+        try:
+            showBackgroundImage = not showBackgroundImage
+            save_config()
+            if webview.windows:
+                webview.windows[0].evaluate_js(
+                    f"window.updateBackgroundImage && window.updateBackgroundImage({str(showBackgroundImage).lower()})"
+                )
+            return "success" if showBackgroundImage else "hidden"
+        except Exception as e:
+            print(f"切换背景图状态失败: {e}")
+            return "failed"
+
+    def get_background_image_enabled(self) -> bool:
+        """
+        获取背景图显示状态（供前端调用）
+
+        Returns:
+            bool: 背景图是否显示
+        """
+        return showBackgroundImage
+
 
 def start_application():
     """启动应用程序"""
@@ -683,7 +719,7 @@ def start_application():
     print(f"窗口位置: ({window_width}, {window_height})")
 
     window_config = {
-        "title": "屏幕护眼工具",
+        "title": "Rukk Filter",
         "url": html_path,
         "width": window_width,
         "height": window_height,
@@ -764,13 +800,16 @@ def start_application():
             pystray.MenuItem(
                 "滤镜开关", lambda icon, item: trigger_hotkey_action("toggleFilter")
             ),
+            pystray.MenuItem(
+                "显示/隐藏背景图", lambda icon, item: api.toggle_background_image()
+            ),
             pystray.MenuItem("切换上一个预设", make_hotkey_callback("prevPreset")),
             pystray.MenuItem("切换下一个预设", make_hotkey_callback("nextPreset")),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("退出", on_quit_callback),
         )
 
-        icon = pystray.Icon("screen_filter", image, "屏幕护眼工具", menu)
+        icon = pystray.Icon("screen_filter", image, "Rukk Filter", menu)
         icon.on_activate = on_tray_activate
         return icon
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>屏幕护眼工具</title>
+    <title>Rukk Filter</title>
     <meta name="darkreader-lock" />
     <script src="./package/vue.global.js"></script>
     <script src="./package/uno.runtime.js"></script>
@@ -574,7 +574,7 @@
     <div id="message-container" class="message-container"></div>
     <div id="app">
       <!-- 全局背景 -->
-      <div class="background-container">
+      <div class="background-container" v-show="showBackgroundImage">
         <img
           src="active.png"
           class="background-image"
@@ -1166,6 +1166,11 @@
           const filterEnabled = ref(true);
 
           /**
+           * 是否显示背景图
+           */
+          const showBackgroundImage = ref(false);
+
+          /**
            * 拖拽区域是否处于hover状态
            */
           const isDragRegionHovered = ref(false);
@@ -1280,6 +1285,15 @@
               window.pywebview.api.toggle_window();
             }
           }
+
+          /**
+           * 更新背景图显示状态
+           * @param {boolean} show - 是否显示背景图
+           */
+          function updateBackgroundImage(show) {
+            showBackgroundImage.value = show;
+          }
+          window.updateBackgroundImage = updateBackgroundImage;
 
           /**
            * 开始捕获快捷键
@@ -1502,6 +1516,21 @@
           }
 
           /**
+           * 初始化背景图显示状态（从后端加载）
+           */
+          async function initBackgroundImage() {
+            try {
+              if (window.pywebview && window.pywebview.api) {
+                const enabled =
+                  await window.pywebview.api.get_background_image_enabled();
+                showBackgroundImage.value = enabled;
+              }
+            } catch (error) {
+              console.error("加载背景图设置失败:", error);
+            }
+          }
+
+          /**
            * 应用滤镜设置并更新当前预设数据
            */
           async function applyFilter(isSwitch = false) {
@@ -1587,6 +1616,7 @@
 
             await initCurrentPresetValues();
             await initHotkeys();
+            await initBackgroundImage();
           }
 
           initializeApp();
@@ -1799,6 +1829,7 @@
             brightnessFilter,
             systemBrightness,
             filterEnabled,
+            showBackgroundImage,
             isDragRegionHovered,
             colorHex,
             brightnessFilterEnabled,
@@ -1813,6 +1844,7 @@
             resetColor,
             toggleFilter,
             toggleWindow,
+            updateBackgroundImage,
             minimizeWindow,
             closeWindow,
             hotkeySettings,

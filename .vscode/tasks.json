@@ -21,7 +21,7 @@
     {
       "label": "打包",
       "type": "shell",
-      "command": "source .venv/Scripts/activate && pyinstaller --onefile --windowed --name \"rukk\" --add-data \"vue-web;vue-web\" --add-data \"config.json;.\" --add-data \"logo.png;.\" -i \"logo.png\" main.py  && exec bash",
+      "command": "source .venv/Scripts/activate && pyinstaller --onefile --windowed --name \"Rukk Filter\" --add-data \"vue-web;vue-web\" --add-data \"config.json;.\" --add-data \"logo.png;.\" -i \"logo.png\" main.py  && exec bash",
       "args": [],
       "options": {
         "cwd": "${workspaceFolder}"

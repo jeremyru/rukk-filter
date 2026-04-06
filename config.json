@@ -76,5 +76,6 @@
       "brightnessFilter": 0,
       "systemBrightness": 100
     }
-  ]
+  ],
+  "showBackgroundImage": true
 }
