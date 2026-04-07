@@ -49,6 +49,7 @@ python main.py
 | 上一个预设 | Ctrl+Down |
 | 切换滤镜开关 | Ctrl+O |
 | 切换窗口显示 | Alt+S |
+| 熄屏 | Ctrl+Shift+S |
 
 ## 目录结构
 

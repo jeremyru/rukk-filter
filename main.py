@@ -10,7 +10,7 @@ import json
 import shutil
 import time
 import webview
-from typing import Dict, List
+from typing import Dict, List, Optional
 import threading
 from PIL import Image
 import pystray
@@ -35,6 +35,7 @@ DEFAULT_HOTKEYS = {
     "prevPreset": "Ctrl+Down",
     "toggleFilter": "Ctrl+O",
     "toggleWindow": "Alt+S",
+    "turnOffScreen": "Ctrl+Shift+S",
 }
 DEFAULT_PRESETS = [
     {
@@ -106,7 +107,8 @@ def get_base_path():
 def get_resource_path(filename):
     """获取资源文件的路径（打包后从临时目录获取）"""
     if getattr(sys, "frozen", False):
-        return os.path.join(sys._MEIPASS, filename)
+        meipass = getattr(sys, "_MEIPASS", "")
+        return os.path.join(meipass, filename)
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
@@ -114,7 +116,8 @@ def ensure_config_exists():
     """确保配置文件存在于exe目录（打包后从临时目录复制）"""
     config_path = os.path.join(get_base_path(), CONFIG_FILE)
     if getattr(sys, "frozen", False) and not os.path.exists(config_path):
-        bundled_config = os.path.join(sys._MEIPASS, CONFIG_FILE)
+        meipass = getattr(sys, "_MEIPASS", "")
+        bundled_config = os.path.join(meipass, CONFIG_FILE)
         if os.path.exists(bundled_config):
             shutil.copy2(bundled_config, config_path)
 
@@ -167,7 +170,7 @@ def check_single_instance():
     global SINGLE_INSTANCE_LOCK
     try:
         SINGLE_INSTANCE_LOCK = win32event.CreateMutex(
-            None, False, "RukkScreenFilter_SingleInstance"
+            None, False, "RukkScreenFilter_SingleInstance"  # type: ignore
         )
         if win32api.GetLastError() == 183:
             print("程序已在运行中，请勿重复启动！")
@@ -175,6 +178,7 @@ def check_single_instance():
         return True
     except (ImportError, AttributeError):
         pass
+    return True
 
     lock_file = os.path.join(get_base_path(), ".single_instance.lock")
     if os.path.exists(lock_file):
@@ -229,6 +233,7 @@ def register_global_hotkeys():
             "prevPreset": lambda: trigger_hotkey_action("prevPreset"),
             "toggleFilter": lambda: trigger_hotkey_action("toggleFilter"),
             "toggleWindow": lambda: trigger_hotkey_action("toggleWindow"),
+            "turnOffScreen": lambda: trigger_hotkey_action("turnOffScreen"),
         }
 
         for key, action in hotkey_actions.items():
@@ -523,6 +528,13 @@ class Api:
             print(f"关闭窗口失败: {e}")
             return "failed"
 
+    def turn_off_screen_api(self) -> str:
+        """
+        熄屏（供JS调用）
+        """
+        turn_off_screen()
+        return "success"
+
     def get_hotkey_settings(self) -> Dict:
         """
         获取快捷键设置（供JS调用）
@@ -572,7 +584,7 @@ class Api:
             print(f"调用前端onHotkey失败: {e}")
         return "success"
 
-    def get_presets(self) -> List:
+    def get_presets(self) -> List[Dict]:
         """
         获取预设列表（供JS调用）
 
@@ -582,6 +594,7 @@ class Api:
         global currentPresets
         if currentPresets is None:
             load_config()
+        assert currentPresets is not None
         return currentPresets
 
     def save_presets(self, presets: List) -> str:
@@ -620,6 +633,34 @@ class Api:
             return "success"
         except Exception as e:
             print(f"显示快捷键设置失败: {e}")
+            return "failed"
+
+    def disable_hotkeys(self) -> str:
+        """
+        禁用所有全局快捷键（供JS调用，编辑快捷键时使用）
+
+        Returns:
+            str: 操作结果消息
+        """
+        try:
+            unregister_global_hotkeys()
+            return "success"
+        except Exception as e:
+            print(f"禁用快捷键失败: {e}")
+            return "failed"
+
+    def enable_hotkeys(self) -> str:
+        """
+        重新启用所有全局快捷键（供JS调用，编辑快捷键结束后使用）
+
+        Returns:
+            str: 操作结果消息
+        """
+        try:
+            register_global_hotkeys()
+            return "success"
+        except Exception as e:
+            print(f"启用快捷键失败: {e}")
             return "failed"
 
     def toggle_window(self) -> str:
@@ -689,6 +730,16 @@ class Api:
             bool: 背景图是否显示
         """
         return showBackgroundImage
+
+
+def turn_off_screen():
+    """关闭屏幕（移动鼠标会自动亮屏）"""
+    try:
+        user32 = ctypes.windll.user32
+        user32.SendMessageW(0xFFFF, 0x0112, 0xF170, 2)
+        print("屏幕已关闭")
+    except Exception as e:
+        print(f"关闭屏幕失败: {e}")
 
 
 def start_application():
@@ -803,6 +854,7 @@ def start_application():
             pystray.MenuItem(
                 "显示/隐藏背景图", lambda icon, item: api.toggle_background_image()
             ),
+            pystray.MenuItem("熄屏", lambda icon, item: turn_off_screen()),
             pystray.MenuItem("切换上一个预设", make_hotkey_callback("prevPreset")),
             pystray.MenuItem("切换下一个预设", make_hotkey_callback("nextPreset")),
             pystray.Menu.SEPARATOR,
@@ -810,7 +862,7 @@ def start_application():
         )
 
         icon = pystray.Icon("screen_filter", image, "Rukk Filter", menu)
-        icon.on_activate = on_tray_activate
+        icon.on_activate = on_tray_activate  # type: ignore
         return icon
 
     tray_icon = create_tray_icon()

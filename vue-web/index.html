@@ -596,74 +596,72 @@
           @mouseenter="isDragRegionHovered = true"
           @mouseleave="isDragRegionHovered = false"
         >
-          <!-- 滤镜开关 -->
+          <!-- 左上角操作按钮 -->
           <div class="flex items-center">
-            <div>
-              <button
-                class="filter-toggle-btn"
-                :class="{ 'filter-off': !filterEnabled }"
-                @click="toggleFilter"
-                :title="filterEnabled ? '关闭滤镜' : '开启滤镜'"
-                title="点击切换滤镜状态"
-              >
-                <svg
-                  v-if="filterEnabled"
-                  viewBox="0 0 1024 1024"
-                  width="20"
-                  height="20"
-                >
-                  <path
-                    d="M839.5776 377.4464c0-181.1456-146.7392-328.3968-326.9632-328.3968S185.5488 196.3008 185.5488 377.4464c0 73.728 38.8096 164.7616 98.9184 231.8336 61.0304 68.096 105.2672 88.1664 105.2672 177.3568v35.5328h245.76v-35.2256c0-88.8832 44.1344-108.9536 104.96-177.3568 55.6032-62.5664 99.1232-164.5568 99.1232-232.1408z"
-                    fill="#FFEC66"
-                  />
-                  <path
-                    d="M512.6144 4.7104C307.9168 4.7104 141.312 171.9296 141.312 377.4464c0 83.968 43.2128 186.5728 110.1824 261.3248 54.4768 60.7232 94.0032 68.4032 94.0032 147.8656V866.304h334.2336v-79.4624c0-79.1552 39.424-86.8352 93.7984-147.968 62.8736-70.7584 110.3872-183.1936 110.3872-261.5296C883.8144 171.9296 717.312 4.7104 512.6144 4.7104z"
-                    fill="none"
-                    stroke="#41424A"
-                    stroke-width="20"
-                  />
-                  <path
-                    d="M600.8832 1018.4704H424.3456c-6.144 0-11.776-3.9936-15.1552-10.6496l-23.9616-47.8208H640l-23.9616 47.8208c-3.3792 6.656-9.0112 10.6496-15.1552 10.6496z"
-                    fill="#41414A"
-                  />
-                  <path
-                    d="M633.856 715.8784H391.3728c-22.7328 0-41.2672 16.9984-44.1344 38.912h195.7888c10.752 0 19.456 8.8064 19.456 19.456 0 10.8544-8.8064 19.456-19.456 19.456H346.624v34.0992h331.8784v-67.2768c0-24.6784-19.968-44.6464-44.6464-44.6464z"
-                    fill="#646A6D"
-                  />
-                  <path
-                    d="M346.624 885.4528c0 52.0192 42.1888 94.1056 94.1056 94.1056h143.5648c31.744 0 59.5968-15.7696 76.6976-39.8336H494.3872c-10.752 0-19.456-8.8064-19.456-19.456s8.8064-19.456 19.456-19.456h182.5792c0.8192-5.0176 1.536-10.1376 1.536-15.36v-18.7392H346.624v18.7392z"
-                    fill="#646A6D"
-                  />
-                </svg>
-                <svg v-else viewBox="0 0 1024 1024" width="20" height="20">
-                  <path
-                    d="M839.5776 377.4464c0-181.1456-146.7392-328.3968-326.9632-328.3968S185.5488 196.3008 185.5488 377.4464c0 73.728 38.8096 164.7616 98.9184 231.8336 61.0304 68.096 105.2672 88.1664 105.2672 177.3568v35.5328h245.76v-35.2256c0-88.8832 44.1344-108.9536 104.96-177.3568 55.6032-62.5664 99.1232-164.5568 99.1232-232.1408z"
-                    fill="#CCCCCC"
-                  />
-                  <path
-                    d="M512.6144 4.7104C307.9168 4.7104 141.312 171.9296 141.312 377.4464c0 83.968 43.2128 186.5728 110.1824 261.3248 54.4768 60.7232 94.0032 68.4032 94.0032 147.8656V866.304h334.2336v-79.4624c0-79.1552 39.424-86.8352 93.7984-147.968 62.8736-70.7584 110.3872-183.1936 110.3872-261.5296C883.8144 171.9296 717.312 4.7104 512.6144 4.7104z"
-                    fill="none"
-                    stroke="#999999"
-                    stroke-width="20"
-                  />
-                  <path
-                    d="M600.8832 1018.4704H424.3456c-6.144 0-11.776-3.9936-15.1552-10.6496l-23.9616-47.8208H640l-23.9616 47.8208c-3.3792 6.656-9.0112 10.6496-15.1552 10.6496z"
-                    fill="#AAAAAA"
-                  />
-                  <path
-                    d="M633.856 715.8784H391.3728c-22.7328 0-41.2672 16.9984-44.1344 38.912h195.7888c10.752 0 19.456 8.8064 19.456 19.456 0 10.8544-8.8064 19.456-19.456 19.456H346.624v34.0992h331.8784v-67.2768c0-24.6784-19.968-44.6464-44.6464-44.6464z"
-                    fill="#BBBBBB"
-                  />
-                  <path
-                    d="M346.624 885.4528c0 52.0192 42.1888 94.1056 94.1056 94.1056h143.5648c31.744 0 59.5968-15.7696 76.6976-39.8336H494.3872c-10.752 0-19.456-8.8064-19.456-19.456s8.8064-19.456 19.456-19.456h182.5792c0.8192-5.0176 1.536-10.1376 1.536-15.36v-18.7392H346.624v18.7392z"
-                    fill="#BBBBBB"
-                  />
-                </svg>
-              </button>
-            </div>
             <button
               class="filter-toggle-btn"
-              @click="showHotkeyModal = true"
+              :class="{ 'filter-off': !filterEnabled }"
+              @click="toggleFilter"
+              :title="filterEnabled ? '关闭滤镜' : '开启滤镜'"
+              title="点击滤镜开关状态"
+            >
+              <svg
+                v-if="filterEnabled"
+                viewBox="0 0 1024 1024"
+                width="20"
+                height="20"
+              >
+                <path
+                  d="M839.5776 377.4464c0-181.1456-146.7392-328.3968-326.9632-328.3968S185.5488 196.3008 185.5488 377.4464c0 73.728 38.8096 164.7616 98.9184 231.8336 61.0304 68.096 105.2672 88.1664 105.2672 177.3568v35.5328h245.76v-35.2256c0-88.8832 44.1344-108.9536 104.96-177.3568 55.6032-62.5664 99.1232-164.5568 99.1232-232.1408z"
+                  fill="#FFEC66"
+                />
+                <path
+                  d="M512.6144 4.7104C307.9168 4.7104 141.312 171.9296 141.312 377.4464c0 83.968 43.2128 186.5728 110.1824 261.3248 54.4768 60.7232 94.0032 68.4032 94.0032 147.8656V866.304h334.2336v-79.4624c0-79.1552 39.424-86.8352 93.7984-147.968 62.8736-70.7584 110.3872-183.1936 110.3872-261.5296C883.8144 171.9296 717.312 4.7104 512.6144 4.7104z"
+                  fill="none"
+                  stroke="#41424A"
+                  stroke-width="20"
+                />
+                <path
+                  d="M600.8832 1018.4704H424.3456c-6.144 0-11.776-3.9936-15.1552-10.6496l-23.9616-47.8208H640l-23.9616 47.8208c-3.3792 6.656-9.0112 10.6496-15.1552 10.6496z"
+                  fill="#41414A"
+                />
+                <path
+                  d="M633.856 715.8784H391.3728c-22.7328 0-41.2672 16.9984-44.1344 38.912h195.7888c10.752 0 19.456 8.8064 19.456 19.456 0 10.8544-8.8064 19.456-19.456 19.456H346.624v34.0992h331.8784v-67.2768c0-24.6784-19.968-44.6464-44.6464-44.6464z"
+                  fill="#646A6D"
+                />
+                <path
+                  d="M346.624 885.4528c0 52.0192 42.1888 94.1056 94.1056 94.1056h143.5648c31.744 0 59.5968-15.7696 76.6976-39.8336H494.3872c-10.752 0-19.456-8.8064-19.456-19.456s8.8064-19.456 19.456-19.456h182.5792c0.8192-5.0176 1.536-10.1376 1.536-15.36v-18.7392H346.624v18.7392z"
+                  fill="#646A6D"
+                />
+              </svg>
+              <svg v-else viewBox="0 0 1024 1024" width="20" height="20">
+                <path
+                  d="M839.5776 377.4464c0-181.1456-146.7392-328.3968-326.9632-328.3968S185.5488 196.3008 185.5488 377.4464c0 73.728 38.8096 164.7616 98.9184 231.8336 61.0304 68.096 105.2672 88.1664 105.2672 177.3568v35.5328h245.76v-35.2256c0-88.8832 44.1344-108.9536 104.96-177.3568 55.6032-62.5664 99.1232-164.5568 99.1232-232.1408z"
+                  fill="#CCCCCC"
+                />
+                <path
+                  d="M512.6144 4.7104C307.9168 4.7104 141.312 171.9296 141.312 377.4464c0 83.968 43.2128 186.5728 110.1824 261.3248 54.4768 60.7232 94.0032 68.4032 94.0032 147.8656V866.304h334.2336v-79.4624c0-79.1552 39.424-86.8352 93.7984-147.968 62.8736-70.7584 110.3872-183.1936 110.3872-261.5296C883.8144 171.9296 717.312 4.7104 512.6144 4.7104z"
+                  fill="none"
+                  stroke="#999999"
+                  stroke-width="20"
+                />
+                <path
+                  d="M600.8832 1018.4704H424.3456c-6.144 0-11.776-3.9936-15.1552-10.6496l-23.9616-47.8208H640l-23.9616 47.8208c-3.3792 6.656-9.0112 10.6496-15.1552 10.6496z"
+                  fill="#AAAAAA"
+                />
+                <path
+                  d="M633.856 715.8784H391.3728c-22.7328 0-41.2672 16.9984-44.1344 38.912h195.7888c10.752 0 19.456 8.8064 19.456 19.456 0 10.8544-8.8064 19.456-19.456 19.456H346.624v34.0992h331.8784v-67.2768c0-24.6784-19.968-44.6464-44.6464-44.6464z"
+                  fill="#BBBBBB"
+                />
+                <path
+                  d="M346.624 885.4528c0 52.0192 42.1888 94.1056 94.1056 94.1056h143.5648c31.744 0 59.5968-15.7696 76.6976-39.8336H494.3872c-10.752 0-19.456-8.8064-19.456-19.456s8.8064-19.456 19.456-19.456h182.5792c0.8192-5.0176 1.536-10.1376 1.536-15.36v-18.7392H346.624v18.7392z"
+                  fill="#BBBBBB"
+                />
+              </svg>
+            </button>
+            <button
+              class="filter-toggle-btn"
+              @click="openHotkeyModal"
               title="快捷键设置"
             >
               <svg
@@ -688,6 +686,28 @@
                 ></path>
               </svg>
             </button>
+            <button
+              class="filter-toggle-btn"
+              @click="turnOffScreen"
+              title="熄屏"
+            >
+              <svg
+                t="1775583781914"
+                class="icon"
+                viewBox="0 0 1024 1024"
+                version="1.1"
+                xmlns="http://www.w3.org/2000/svg"
+                p-id="4228"
+                width="200"
+                height="200"
+              >
+                <path
+                  d="M262.4 576c45.397333 0 70.378667 32.576 70.378667 91.733333 0 59.136-24.981333 91.733333-70.378667 91.733334S192 726.869333 192 667.733333c0-59.157333 25.002667-91.733333 70.4-91.733333z m199.573333 3.626667v28.992H385.92v44.288h69.205333v28.906666H385.92v73.92H356.266667V579.626667h105.706666z m126.293334 0v28.992h-75.968v44.288h69.226666v28.906666h-69.226666v73.92h-29.76V579.626667h105.728zM768 277.333333a64 64 0 0 1 64 64v341.333334a64 64 0 0 1-64 64h-149.333333v-42.666667h149.333333a21.333333 21.333333 0 0 0 21.333333-21.333333V341.333333a21.333333 21.333333 0 0 0-21.333333-21.333333H256a21.333333 21.333333 0 0 0-21.333333 21.333333v213.333334H192V341.333333a64 64 0 0 1 64-64h512zM262.4 606.058667c-18.496 0-39.701333 7.082667-39.701333 62.208 0 54.784 20.074667 62.165333 39.701333 62.165333 19.562667 0 39.573333-7.381333 39.573333-62.165333 0-54.805333-20.010667-62.208-39.573333-62.208z m474.325333-190.421334a21.333333 21.333333 0 0 1-6.784 29.397334l-90.453333 56.533333a21.333333 21.333333 0 1 1-22.613333-36.202667l90.453333-56.533333a21.333333 21.333333 0 0 1 29.397333 6.805333z m-33.92-54.272a21.333333 21.333333 0 0 1-6.784 29.397334l-44.416 27.733333a21.333333 21.333333 0 1 1-22.613333-36.181333l44.416-27.733334a21.333333 21.333333 0 0 1 29.397333 6.784z"
+                  p-id="4229"
+                  fill="#707070"
+                ></path>
+              </svg>
+            </button>
           </div>
           <!-- 窗口操作按钮 -->
           <div class="flex items-center gap-5px">
@@ -707,18 +727,22 @@
             </div>
           </div>
           <!-- 版权信息 -->
-          <a
-            href="https://github.com/jeremyru/rukk-filter"
-            target="_blank"
-            class="copyright-text text-black absolute top-50% left-50% -translate-x-1/2 -translate-y-1/2 flex items-center gap-5px cursor-pointer hover:opacity-70 transition-opacity"
+          <div
+            class="copyright-text text-black absolute top-50% left-50% -translate-x-1/2 -translate-y-1/2 flex items-center gap-5px hover:opacity-70 transition-opacity"
           >
             <svg class="w-12px h-12px fill-current" viewBox="0 0 24 24">
               <path
                 d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
               />
             </svg>
-            Power by @JeremyRu
-          </a>
+            Power by
+            <a
+              href="https://github.com/jeremyru/rukk-filter"
+              target="_blank"
+              class="text-black cursor-pointer"
+              >@JeremyRu</a
+            >
+          </div>
         </div>
         <div class="layer-card">
           <!-- 滤镜重置按钮 -->
@@ -854,9 +878,11 @@
           @click.self="handleModalClick($event)"
         >
           <div class="modal-content" @click="handleModalClick($event)">
-            <div class="modal-header">
-              <span class="modal-title">快捷键设置</span>
-              <button class="modal-close" @click.stop="showHotkeyModal = false">
+            <div class="modal-header flex justify-between items-center">
+              <div class="text-black text-left text-sm flex-1 font-bold">
+                快捷键设置
+              </div>
+              <button class="modal-close" @click.stop="closeHotkeyModal">
                 <svg
                   width="14"
                   height="14"
@@ -878,10 +904,11 @@
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.increaseIntensity"
+                  :value="activeHotkey === 'increaseIntensity' && tempHotkey !== null ? tempHotkey : hotkeySettings.increaseIntensity"
                   @keydown="captureHotkey('increaseIntensity', $event)"
                   @click="startCapture('increaseIntensity', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'increaseIntensity' }"
                   readonly
                   placeholder="点击设置"
@@ -894,10 +921,11 @@
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.decreaseIntensity"
+                  :value="activeHotkey === 'decreaseIntensity' && tempHotkey !== null ? tempHotkey : hotkeySettings.decreaseIntensity"
                   @keydown="captureHotkey('decreaseIntensity', $event)"
                   @click="startCapture('decreaseIntensity', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'decreaseIntensity' }"
                   readonly
                   placeholder="点击设置"
@@ -910,10 +938,11 @@
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.increaseBrightness"
+                  :value="activeHotkey === 'increaseBrightness' && tempHotkey !== null ? tempHotkey : hotkeySettings.increaseBrightness"
                   @keydown="captureHotkey('increaseBrightness', $event)"
                   @click="startCapture('increaseBrightness', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'increaseBrightness' }"
                   readonly
                   placeholder="点击设置"
@@ -926,10 +955,11 @@
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.decreaseBrightness"
+                  :value="activeHotkey === 'decreaseBrightness' && tempHotkey !== null ? tempHotkey : hotkeySettings.decreaseBrightness"
                   @keydown="captureHotkey('decreaseBrightness', $event)"
                   @click="startCapture('decreaseBrightness', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'decreaseBrightness' }"
                   readonly
                   placeholder="点击设置"
@@ -940,10 +970,11 @@
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.nextPreset"
+                  :value="activeHotkey === 'nextPreset' && tempHotkey !== null ? tempHotkey : hotkeySettings.nextPreset"
                   @keydown="captureHotkey('nextPreset', $event)"
                   @click="startCapture('nextPreset', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'nextPreset' }"
                   readonly
                   placeholder="点击设置"
@@ -954,39 +985,59 @@
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.prevPreset"
+                  :value="activeHotkey === 'prevPreset' && tempHotkey !== null ? tempHotkey : hotkeySettings.prevPreset"
                   @keydown="captureHotkey('prevPreset', $event)"
                   @click="startCapture('prevPreset', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'prevPreset' }"
                   readonly
                   placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-xs text-text-medium w-80px">切换滤镜</span>
+                <span class="text-xs text-text-medium w-80px">滤镜开关</span>
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.toggleFilter"
+                  :value="activeHotkey === 'toggleFilter' && tempHotkey !== null ? tempHotkey : hotkeySettings.toggleFilter"
                   @keydown="captureHotkey('toggleFilter', $event)"
                   @click="startCapture('toggleFilter', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'toggleFilter' }"
                   readonly
                   placeholder="点击设置"
                 />
               </div>
               <div class="flex items-center gap-10px">
-                <span class="text-xs text-text-medium w-80px">切换窗口</span>
+                <span class="text-xs text-text-medium w-80px"
+                  >显示/隐藏窗口</span
+                >
                 <input
                   type="text"
                   class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
-                  :value="hotkeySettings.toggleWindow"
+                  :value="activeHotkey === 'toggleWindow' && tempHotkey !== null ? tempHotkey : hotkeySettings.toggleWindow"
                   @keydown="captureHotkey('toggleWindow', $event)"
                   @click="startCapture('toggleWindow', $event)"
                   @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
                   :class="{ 'border-green hotkey-active': activeHotkey === 'toggleWindow' }"
+                  readonly
+                  placeholder="点击设置"
+                />
+              </div>
+              <div class="flex items-center gap-10px">
+                <span class="text-xs text-text-medium w-80px">熄屏</span>
+                <input
+                  type="text"
+                  class="hotkey-input flex-1 px-8px py-4px text-xs border rounded cursor-pointer"
+                  :value="activeHotkey === 'turnOffScreen' && tempHotkey !== null ? tempHotkey : hotkeySettings.turnOffScreen"
+                  @keydown="captureHotkey('turnOffScreen', $event)"
+                  @click="startCapture('turnOffScreen', $event)"
+                  @blur="cancelCapture"
+                  @keydown.enter.prevent="confirmHotkey"
+                  :class="{ 'border-green hotkey-active': activeHotkey === 'turnOffScreen' }"
                   readonly
                   placeholder="点击设置"
                 />
@@ -1281,15 +1332,27 @@
               case "toggleWindow":
                 toggleWindow();
                 break;
+              case "turnOffScreen":
+                turnOffScreen();
+                break;
             }
           };
 
           /**
-           * 切换窗口显示/隐藏
+           * 显示/隐藏窗口显示/隐藏
            */
           function toggleWindow() {
             if (window.pywebview && window.pywebview.api) {
               window.pywebview.api.toggle_window();
+            }
+          }
+
+          /**
+           * 熄屏
+           */
+          function turnOffScreen() {
+            if (window.pywebview && window.pywebview.api) {
+              window.pywebview.api.turn_off_screen_api();
             }
           }
 
@@ -1318,6 +1381,7 @@
               activeHotkey.value = keyName;
               capturingKey.value = keyName;
               tempHotkey.value = hotkeySettings.value[keyName] || null;
+              filterEnabled.value = false;
             }
           }
 
@@ -1328,6 +1392,24 @@
             activeHotkey.value = null;
             capturingKey.value = null;
             tempHotkey.value = null;
+            filterEnabled.value = true;
+          }
+
+          /**
+           * 关闭快捷键设置模态框
+           */
+          function closeHotkeyModal() {
+            showHotkeyModal.value = false;
+            cancelCapture();
+            window.pywebview.api.enable_hotkeys();
+          }
+
+          /**
+           * 打开快捷键设置模态框
+           */
+          function openHotkeyModal() {
+            window.pywebview.api.disable_hotkeys();
+            showHotkeyModal.value = true;
           }
 
           /**
@@ -1353,8 +1435,8 @@
               decreaseBrightness: "减少亮度滤镜",
               nextPreset: "下一个预设",
               prevPreset: "上一个预设",
-              toggleFilter: "切换滤镜",
-              toggleWindow: "切换窗口",
+              toggleFilter: "滤镜开关",
+              toggleWindow: "显示/隐藏窗口",
             };
             for (const [keyName, setting] of Object.entries(
               hotkeySettings.value,
@@ -1375,20 +1457,43 @@
           function captureHotkey(keyName, e) {
             if (capturingKey.value !== keyName) return;
 
+            const forbiddenKeys = [
+              "Enter",
+              "Tab",
+              "CapsLock",
+              "Backspace",
+              "Delete",
+              "Insert",
+              "Home",
+              "End",
+              "PrintScreen",
+              "ScrollLock",
+              "Pause",
+              "Meta",
+              "ContextMenu",
+              "Escape",
+            ];
+
+            if (e.code === "Backspace" || e.key === "Backspace") {
+              e.preventDefault();
+              tempHotkey.value = "";
+              return;
+            }
+
+            if (
+              forbiddenKeys.includes(e.code) ||
+              forbiddenKeys.includes(e.key)
+            ) {
+              e.preventDefault();
+              return;
+            }
+
             if (e.ctrlKey && (e.code === "PageUp" || e.code === "PageDown")) {
               e.preventDefault();
               e.stopPropagation();
               const hotkey =
                 "Ctrl+" + (e.code === "PageUp" ? "PageUp" : "PageDown");
-              const conflict = checkHotkeyConflict(hotkey, keyName);
-              if (conflict) {
-                message(`快捷键已被「${conflict}」使用`, "warning");
-                return;
-              }
-              hotkeySettings.value[keyName] = hotkey;
-              saveHotkeySettings();
-              registerHotkeys();
-              cancelCapture();
+              tempHotkey.value = hotkey;
               return;
             }
 
@@ -1452,15 +1557,16 @@
 
             const result = parts.join("+");
             if (result && !result.endsWith("+")) {
-              const conflict = checkHotkeyConflict(result, keyName);
-              if (conflict) {
-                message(`快捷键已被「${conflict}」使用`, "warning");
+              if (parts.length === 1) {
                 return;
               }
-              hotkeySettings.value[keyName] = result;
-              saveHotkeySettings();
-              registerHotkeys();
-              cancelCapture();
+              const modifierOnly = parts.every((p) =>
+                ["Ctrl", "Shift", "Alt"].includes(p),
+              );
+              if (modifierOnly) {
+                return;
+              }
+              tempHotkey.value = result;
             }
           }
 
@@ -1468,6 +1574,41 @@
            * 取消快捷键捕获
            */
           function cancelCapture() {
+            if (tempHotkey.value !== null) {
+              const conflict = checkHotkeyConflict(
+                tempHotkey.value,
+                capturingKey.value,
+              );
+              if (conflict) {
+                message(`快捷键已被「${conflict}」使用`, "warning");
+              } else {
+                hotkeySettings.value[capturingKey.value] = tempHotkey.value;
+                saveHotkeySettings();
+                registerHotkeys();
+              }
+            }
+            activeHotkey.value = null;
+            capturingKey.value = null;
+            tempHotkey.value = null;
+          }
+
+          /**
+           * 保存快捷键并关闭捕获
+           */
+          function confirmHotkey() {
+            if (tempHotkey.value !== null) {
+              const conflict = checkHotkeyConflict(
+                tempHotkey.value,
+                capturingKey.value,
+              );
+              if (conflict) {
+                message(`快捷键已被「${conflict}」使用`, "warning");
+              } else {
+                hotkeySettings.value[capturingKey.value] = tempHotkey.value;
+                saveHotkeySettings();
+                registerHotkeys();
+              }
+            }
             activeHotkey.value = null;
             capturingKey.value = null;
             tempHotkey.value = null;
@@ -1851,6 +1992,7 @@
             resetColor,
             toggleFilter,
             toggleWindow,
+            turnOffScreen,
             updateBackgroundImage,
             minimizeWindow,
             closeWindow,
@@ -1862,7 +2004,10 @@
             startCapture,
             captureHotkey,
             cancelCapture,
+            confirmHotkey,
             handleModalClick,
+            closeHotkeyModal,
+            openHotkeyModal,
           };
         },
       }).mount("#app");

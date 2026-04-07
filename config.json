@@ -1,13 +1,14 @@
 {
   "hotkeys": {
-    "increaseIntensity": "Ctrl+Right",
-    "decreaseIntensity": "Ctrl+Left",
-    "increaseBrightness": "Alt+Right",
-    "decreaseBrightness": "Alt+Left",
-    "nextPreset": "Ctrl+Up",
-    "prevPreset": "Ctrl+Down",
-    "toggleFilter": "Ctrl+O",
-    "toggleWindow": "Alt+S"
+    "increaseIntensity": "Ctrl+Alt+Right",
+    "decreaseIntensity": "Ctrl+Alt+Left",
+    "increaseBrightness": "Ctrl+Alt+Up",
+    "decreaseBrightness": "Ctrl+Alt+Down",
+    "nextPreset": "Shift+Alt+Right",
+    "prevPreset": "Shift+Alt+Left",
+    "toggleFilter": "Shift+PageUp",
+    "toggleWindow": "Shift+Alt+O",
+    "turnOffScreen": "Shift+Alt+H"
   },
   "presets": [
     {
@@ -17,8 +18,8 @@
         32,
         38
       ],
-      "intensity": 40,
-      "brightnessFilter": 0,
+      "intensity": 50,
+      "brightnessFilter": 5,
       "systemBrightness": 0
     },
     {
