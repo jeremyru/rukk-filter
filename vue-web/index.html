@@ -720,6 +720,7 @@
             </div>
             <div
               class="window-btn window-btn-close"
+              v-show="showCloseButton"
               @click="closeWindow"
               title="退出"
             >
@@ -1228,6 +1229,11 @@
           const showBackgroundImage = ref(false);
 
           /**
+           * 是否显示关闭按钮
+           */
+          const showCloseButton = ref(true);
+
+          /**
            * 拖拽区域是否处于hover状态
            */
           const isDragRegionHovered = ref(false);
@@ -1363,6 +1369,17 @@
             showBackgroundImage.value = show;
           }
           window.updateBackgroundImage = updateBackgroundImage;
+
+          /**
+           * 更新关闭按钮显示状态
+           * @param {boolean} show - 是否显示关闭按钮
+           */
+          function updateCloseButtonVisibility(show) {
+            console.log("updateCloseButtonVisibility called with:", show);
+            showCloseButton.value = show;
+            console.log("showCloseButton.value is now:", showCloseButton.value);
+          }
+          window.updateCloseButtonVisibility = updateCloseButtonVisibility;
 
           /**
            * 开始捕获快捷键
@@ -1677,6 +1694,18 @@
             }
           }
 
+          async function initCloseButton() {
+            try {
+              if (window.pywebview && window.pywebview.api) {
+                const enabled =
+                  await window.pywebview.api.get_close_button_enabled();
+                showCloseButton.value = enabled;
+              }
+            } catch (error) {
+              console.error("加载关闭按钮设置失败:", error);
+            }
+          }
+
           /**
            * 应用滤镜设置并更新当前预设数据
            */
@@ -1764,6 +1793,7 @@
             await initCurrentPresetValues();
             await initHotkeys();
             await initBackgroundImage();
+            await initCloseButton();
           }
 
           initializeApp();
@@ -1977,6 +2007,7 @@
             systemBrightness,
             filterEnabled,
             showBackgroundImage,
+            showCloseButton,
             isDragRegionHovered,
             colorHex,
             brightnessFilterEnabled,
@@ -1993,6 +2024,7 @@
             toggleWindow,
             turnOffScreen,
             updateBackgroundImage,
+            updateCloseButtonVisibility,
             minimizeWindow,
             closeWindow,
             hotkeySettings,

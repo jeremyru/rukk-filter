@@ -18,7 +18,7 @@
         32,
         38
       ],
-      "intensity": 50,
+      "intensity": 49,
       "brightnessFilter": 5,
       "systemBrightness": 0
     },
@@ -78,5 +78,6 @@
       "systemBrightness": 100
     }
   ],
-  "showBackgroundImage": true
+  "showBackgroundImage": true,
+  "showCloseButton": false
 }

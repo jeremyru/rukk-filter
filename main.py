@@ -19,24 +19,30 @@ import win32api
 import psutil
 import keyboard
 
-
+# 调试模式标志，True时输出详细日志
 DEBUG = False
+# 应用程序图标路径
 ICON = "logo.png"
 
+# 单实例锁，用于防止程序重复启动
 SINGLE_INSTANCE_LOCK = None
+# 窗口可见性标志，控制主窗口显示/隐藏状态
 WINDOW_VISIBLE = True
 
+# 默认快捷键配置
 DEFAULT_HOTKEYS = {
-    "increaseIntensity": "Ctrl+Right",
-    "decreaseIntensity": "Ctrl+Left",
-    "increaseBrightness": "Alt+Right",
-    "decreaseBrightness": "Alt+Left",
-    "nextPreset": "Ctrl+Up",
-    "prevPreset": "Ctrl+Down",
-    "toggleFilter": "Ctrl+O",
-    "toggleWindow": "Alt+S",
-    "turnOffScreen": "Ctrl+Shift+S",
+    "increaseIntensity": "Ctrl+Right",  # 增加滤镜强度
+    "decreaseIntensity": "Ctrl+Left",  # 减少滤镜强度
+    "increaseBrightness": "Alt+Right",  # 增加亮度
+    "decreaseBrightness": "Alt+Left",  # 减少亮度
+    "nextPreset": "Ctrl+Up",  # 下一个预设
+    "prevPreset": "Ctrl+Down",  # 上一个预设
+    "toggleFilter": "Ctrl+O",  # 切换滤镜开关
+    "toggleWindow": "Alt+S",  # 切换窗口显示/隐藏
+    "turnOffScreen": "Ctrl+Shift+S",  # 熄屏
 }
+
+# 默认预设配置列表
 DEFAULT_PRESETS = [
     {
         "name": "默认",
@@ -82,18 +88,25 @@ DEFAULT_PRESETS = [
     },
 ]
 
+# 配置文件名称
 CONFIG_FILE = "config.json"
 
+# 当前快捷键配置（运行时从配置文件加载）
 currentHotkeys = DEFAULT_HOTKEYS.copy()
 
-
+# 已注册的全局快捷键列表（用于取消注册）
 registeredHotkeys = []
 
+# 滤镜开关状态
 filterEnabled = True
+# 背景图显示状态
 showBackgroundImage = True
+# 关闭按钮显示状态
+showCloseButton = False
+# 当前预设列表（运行时从配置文件加载）
 currentPresets = None
 
-
+# 配置缓存（内存中）
 configCache = {}
 
 
@@ -137,6 +150,8 @@ def load_config():
             )
             global showBackgroundImage
             showBackgroundImage = configCache.get("showBackgroundImage", True)
+            global showCloseButton
+            showCloseButton = configCache.get("showCloseButton", True)
             print(f"配置已加载: {len(currentPresets)} 个预设")
         else:
             currentHotkeys = DEFAULT_HOTKEYS.copy()
@@ -157,6 +172,7 @@ def save_config():
             "hotkeys": currentHotkeys,
             "presets": currentPresets,
             "showBackgroundImage": showBackgroundImage,
+            "showCloseButton": showCloseButton,
         }
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(configCache, f, ensure_ascii=False, indent=2)
@@ -731,6 +747,36 @@ class Api:
         """
         return showBackgroundImage
 
+    def toggle_close_button(self) -> str:
+        """
+        切换关闭按钮显示/隐藏状态（供托盘调用）
+
+        Returns:
+            str: 操作结果消息
+        """
+        global showCloseButton
+        try:
+            showCloseButton = not showCloseButton
+            save_config()
+            print(f"切换关闭按钮状态: {showCloseButton}")
+            if webview.windows:
+                js_code = f"window.updateCloseButtonVisibility && window.updateCloseButtonVisibility({str(showCloseButton).lower()})"
+                print(f"执行JS: {js_code}")
+                webview.windows[0].evaluate_js(js_code)
+            return "success" if showCloseButton else "hidden"
+        except Exception as e:
+            print(f"切换关闭按钮状态失败: {e}")
+            return "failed"
+
+    def get_close_button_enabled(self) -> bool:
+        """
+        获取关闭按钮显示状态（供前端调用）
+
+        Returns:
+            bool: 关闭按钮是否显示
+        """
+        return showCloseButton
+
 
 def turn_off_screen():
     """关闭屏幕（移动鼠标会自动亮屏）"""
@@ -853,6 +899,9 @@ def start_application():
             ),
             pystray.MenuItem(
                 "显示/隐藏背景图", lambda icon, item: api.toggle_background_image()
+            ),
+            pystray.MenuItem(
+                "显示/隐藏关闭按钮", lambda icon, item: api.toggle_close_button()
             ),
             pystray.MenuItem("熄屏", lambda icon, item: turn_off_screen()),
             pystray.MenuItem("切换上一个预设", make_hotkey_callback("prevPreset")),
